@@ -43,7 +43,7 @@ export default function CharacterRunesPage() {
   const { toast } = useToast();
 
   const [characterName, setCharacterName] = useState('');
-  const [tier, setTier] = useState<number>(9);
+  const [tier, setTier] = useState<number>(2);
   const [equipments, setEquipments] = useState<Equipment[]>(() => getInitialEquipmentState(tier));
   const [isLoading, setIsLoading] = useState(true);
 
