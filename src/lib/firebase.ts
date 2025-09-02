@@ -21,13 +21,8 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // Se estiver em ambiente de desenvolvimento, conecte ao emulador de autenticação
-// Isso garante que a autenticação funcione corretamente em localhost
 if (process.env.NODE_ENV === 'development') {
-    // O Next.js executa o código do lado do servidor primeiro, onde 'window' não existe.
-    // Garantimos que o emulador só seja conectado no navegador.
-    if (typeof window !== 'undefined') {
-        connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
-    }
+    connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
 }
 
 
