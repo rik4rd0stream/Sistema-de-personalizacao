@@ -6,12 +6,12 @@ import { getAuth } from 'firebase/auth';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  projectId: 'otimizador-de-runas',
-  appId: '1:870600968343:web:cb32019e2a21ee41c441d2',
-  storageBucket: 'otimizador-de-runas.firebasestorage.app',
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'firebase-api-key-placeholder',
-  authDomain: 'otimizador-de-runas.firebaseapp.com',
-  messagingSenderId: '870600968343',
+  apiKey: "AIzaSyBRBo_hIwzGGiG1JjbELnExnlE1v89Deh4",
+  authDomain: "otimizador-de-runas.firebaseapp.com",
+  projectId: "otimizador-de-runas",
+  storageBucket: "otimizador-de-runas.firebasestorage.app",
+  messagingSenderId: "870600968343",
+  appId: "1:870600968343:web:cb32019e2a21ee41c441d2"
 };
 
 // Initialize Firebase
