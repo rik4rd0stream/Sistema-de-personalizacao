@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      router.push('/personagens');
     } catch (error: any) {
        toast({
           variant: "destructive",
@@ -53,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string) => {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
+      // No redirect here, user will be redirected via onAuthStateChanged
     } catch (error: any) {
         let description = "Ocorreu um erro ao criar a conta.";
         if (error.code === 'auth/email-already-in-use') {
