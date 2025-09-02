@@ -12,12 +12,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 interface Character {
     id: string;
     name: string;
+    characterClass: string;
     createdAt: Timestamp;
 }
+
+const CHARACTER_CLASSES = ["ENE", "Elfa AGI", "DW ENE", "DW AGI", "DK ENE", "DK STR", "DL ENE", "DL STR"];
+
 
 export default function CharactersPage() {
     const { user, loading: authLoading } = useAuth();
@@ -26,6 +32,7 @@ export default function CharactersPage() {
 
     const [characters, setCharacters] = useState<Character[]>([]);
     const [characterName, setCharacterName] = useState('');
+    const [characterClass, setCharacterClass] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
 
@@ -63,11 +70,11 @@ export default function CharactersPage() {
 
     const handleCreateCharacter = async (e: FormEvent) => {
         e.preventDefault();
-        if (!characterName.trim() || !user) {
+        if (!characterName.trim() || !characterClass || !user) {
             toast({
                 variant: 'destructive',
-                title: 'Nome inválido',
-                description: 'Por favor, insira um nome para o personagem.',
+                title: 'Campos inválidos',
+                description: 'Por favor, insira um nome e selecione uma classe para o personagem.',
             });
             return;
         }
@@ -77,14 +84,13 @@ export default function CharactersPage() {
             const docRef = await addDoc(collection(db, 'characters'), {
                 userId: user.uid,
                 name: characterName.trim(),
+                characterClass: characterClass,
                 createdAt: Timestamp.now()
             });
-            toast({
-                title: 'Personagem criado!',
-                description: `O personagem ${characterName.trim()} foi adicionado com sucesso.`,
-            });
-            setCharacters(prev => [{ id: docRef.id, name: characterName.trim(), createdAt: Timestamp.now() }, ...prev]);
+            const newChar = { id: docRef.id, name: characterName.trim(), characterClass, createdAt: Timestamp.now() };
+            setCharacters(prev => [newChar, ...prev]);
             setCharacterName('');
+            setCharacterClass('');
         } catch (error) {
             console.error("Error creating character:", error);
             toast({
@@ -129,6 +135,16 @@ export default function CharactersPage() {
                                     disabled={isCreating}
                                     className="flex-grow"
                                 />
+                                 <Select value={characterClass} onValueChange={setCharacterClass} disabled={isCreating}>
+                                    <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder="Selecione a classe" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {CHARACTER_CLASSES.map(c => (
+                                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 <Button type="submit" disabled={isCreating} className="w-full sm:w-auto">
                                     {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Criar Personagem'}
                                 </Button>
@@ -145,7 +161,12 @@ export default function CharactersPage() {
                                         <a className="block">
                                             <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer">
                                                 <CardHeader className="flex flex-row items-center justify-between">
-                                                    <CardTitle>{char.name}</CardTitle>
+                                                    <div>
+                                                        <CardTitle>{char.name}</CardTitle>
+                                                        <CardDescription>
+                                                           <Badge variant="secondary" className="mt-2">{char.characterClass}</Badge>
+                                                        </CardDescription>
+                                                    </div>
                                                     <ChevronRight className="h-6 w-6 text-muted-foreground"/>
                                                 </CardHeader>
                                             </Card>
