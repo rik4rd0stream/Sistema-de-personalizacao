@@ -9,7 +9,7 @@ const firebaseConfig = {
   projectId: 'otimizador-de-runas',
   appId: '1:870600968343:web:cb32019e2a21ee41c441d2',
   storageBucket: 'otimizador-de-runas.firebasestorage.app',
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'firebase-api-key-placeholder',
   authDomain: 'otimizador-de-runas.firebaseapp.com',
   messagingSenderId: '870600968343',
 };
