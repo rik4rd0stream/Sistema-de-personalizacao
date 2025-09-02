@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,13 +10,19 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { logIn, signUp } = useAuth();
+  const { user, loading, logIn, signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+        router.push('/personagens');
+    }
+  }, [user, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,25 +34,31 @@ export default function LoginPage() {
       });
       return;
     }
-    setLoading(true);
+    setIsSubmitting(true);
     try {
       if (isSignUp) {
         await signUp(email, password);
-        toast({
-            title: 'Conta criada com sucesso!',
-            description: 'Você já pode fazer o login.',
-        });
-        setIsSignUp(false);
+        // On success, the auth-context handles toasts and redirection logic after approval.
+        setIsSignUp(false); // Switch back to login view
       } else {
         await logIn(email, password);
-        router.push('/');
+        // On success, the auth-context handles redirection.
       }
     } catch (error: any) {
-      // O toast de erro já é exibido pelo auth-context
+      // Error toasts are already handled by the auth-context
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  if (loading || user) {
+     return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-secondary/30 p-4">
@@ -70,7 +82,7 @@ export default function LoginPage() {
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
+                disabled={isSubmitting}
                 required
               />
             </div>
@@ -82,16 +94,16 @@ export default function LoginPage() {
                 placeholder="********"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
+                disabled={isSubmitting}
                 required
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignUp ? 'Criar conta' : 'Entrar')}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignUp ? 'Criar conta' : 'Entrar')}
             </Button>
-             <Button variant="link" type="button" onClick={() => setIsSignUp(!isSignUp)} disabled={loading}>
+             <Button variant="link" type="button" onClick={() => setIsSignUp(!isSignUp)} disabled={isSubmitting}>
               {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem uma conta? Crie uma'}
             </Button>
           </CardFooter>

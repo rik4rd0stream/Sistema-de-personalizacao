@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -9,12 +8,22 @@ import {
   signOut,
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
+import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  role: 'admin' | 'user';
+  status: 'approved' | 'pending' | 'rejected';
+  createdAt: any;
+}
 
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   logIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
@@ -25,23 +34,56 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
 
+  const MASTER_ADMIN_EMAIL = "rik4rd0stream@gmail.com";
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const profile = userDoc.data() as UserProfile;
+          setUserProfile(profile);
+
+          if (profile.status === 'pending') {
+            if (pathname !== '/aguardando-aprovacao') {
+               router.push('/aguardando-aprovacao');
+            }
+          } else if (profile.status === 'approved') {
+            const allowedRoutes = ['/aguardando-aprovacao', '/login'];
+             if (allowedRoutes.includes(pathname)) {
+               router.push('/personagens');
+            }
+          } else { // rejected
+             await signOut(auth);
+          }
+
+        } else {
+            // This case might happen if user is created in Auth but not in Firestore
+            // For now, we log them out.
+            await signOut(auth);
+            setUserProfile(null);
+        }
+      } else {
+        setUserProfile(null);
+      }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router, pathname]);
 
   const logIn = async (email: string, password: string) => {
     try {
+      // The onAuthStateChanged listener will handle redirection
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/personagens');
     } catch (error: any) {
        toast({
           variant: "destructive",
@@ -54,8 +96,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // No redirect here, user will be redirected via onAuthStateChanged
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const newUser = userCredential.user;
+
+      const newUserProfile: Omit<UserProfile, 'createdAt'> = {
+          uid: newUser.uid,
+          email: newUser.email!,
+          role: newUser.email === MASTER_ADMIN_EMAIL ? 'admin' : 'user',
+          status: newUser.email === MASTER_ADMIN_EMAIL ? 'approved' : 'pending',
+      };
+
+      await setDoc(doc(db, "users", newUser.uid), {
+          ...newUserProfile,
+          createdAt: serverTimestamp(),
+      });
+      
+      // Log out the user immediately after sign up
+      // They will need to wait for approval
+      if (newUser.email !== MASTER_ADMIN_EMAIL) {
+          await signOut(auth);
+          toast({
+            title: 'Cadastro enviado!',
+            description: 'Sua conta foi criada e está aguardando aprovação de um administrador.',
+          });
+          router.push('/login');
+      } else {
+        toast({
+            title: 'Conta de Administrador criada!',
+            description: 'Login realizado com sucesso.',
+        });
+      }
+
+
     } catch (error: any) {
         let description = "Ocorreu um erro ao criar a conta.";
         if (error.code === 'auth/email-already-in-use') {
@@ -88,11 +160,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
+    userProfile,
     loading,
     logIn,
     signUp,
     logOut,
   };
+
+  if (loading) {
+    return null; // or a loading spinner covering the whole page
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
