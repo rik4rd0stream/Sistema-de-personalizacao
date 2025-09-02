@@ -74,6 +74,7 @@ export default function CharacterRunesPage() {
 
   const fetchCharacterData = useCallback(async () => {
     if (user && characterId) {
+        setIsLoading(true);
         try {
             const charDocRef = doc(db, 'users', user.uid, 'characters', characterId);
             const charDoc = await getDoc(charDocRef);
@@ -86,11 +87,12 @@ export default function CharacterRunesPage() {
                 const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
                 const savedRunes = await getDoc(savedRunesDocRef);
 
+                let initialTier = 2;
                 if (savedRunes.exists()) {
                   const runesData = savedRunes.data();
-                  const savedTier = runesData.tier;
-                  setTier(savedTier);
-                  setEquipments(runesData.equipments || getInitialEquipmentState(savedTier));
+                  initialTier = runesData.tier || 2;
+                  setTier(initialTier);
+                  setEquipments(runesData.equipments || getInitialEquipmentState(initialTier));
                 } else {
                   setTier(2);
                   setEquipments(getInitialEquipmentState(2));
@@ -157,6 +159,8 @@ export default function CharacterRunesPage() {
     const newTier = parseInt(newTierValue, 10);
     setTier(newTier);
     
+    // We only reset equipments if we don't find a saved config for that tier.
+    // The useEffect listening on `tier` will handle fetching the appropriate runes.
     if (user && characterId) {
         try {
             const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
@@ -164,10 +168,12 @@ export default function CharacterRunesPage() {
             if (savedRunes.exists() && savedRunes.data().tier === newTier) {
                 setEquipments(savedRunes.data().equipments);
             } else {
+                // If no config for the new tier, or no config at all, reset.
                 setEquipments(getInitialEquipmentState(newTier));
             }
         } catch (error) {
              console.error("Error fetching runes on tier change: ", error);
+             // Fallback to initial state on error
              setEquipments(getInitialEquipmentState(newTier));
         }
     }
