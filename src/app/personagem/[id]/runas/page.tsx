@@ -44,7 +44,7 @@ function getInitialEquipmentState(tier: number): Equipment[] {
 export default function CharacterRunesPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  params = useParams();
+  const params = useParams();
   const characterId = params.id as string;
   const { toast } = useToast();
 
