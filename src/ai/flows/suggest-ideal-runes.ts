@@ -15,6 +15,7 @@ const SuggestIdealRunesInputSchema = z.object({
     .string()
     .describe('The type of equipment (e.g., primary weapon, helmet).'),
   tier: z.number().min(2).max(9).describe('The tier of the equipment (2-9).'),
+  characterClass: z.string().describe('The character class (e.g., DW AGI, ELFA ENE).'),
 });
 export type SuggestIdealRunesInput = z.infer<typeof SuggestIdealRunesInputSchema>;
 
@@ -35,12 +36,13 @@ const prompt = ai.definePrompt({
   output: {schema: SuggestIdealRunesOutputSchema},
   prompt: `You are an expert in rune combinations for the game Sett.
 
-You will be given the equipment type and tier, and you will suggest the ideal rune combination for that equipment.
+You will be given the equipment type, tier, and character class. Based on this information, you will suggest the ideal rune combination for that specific equipment and build.
 
 Equipment Type: {{{equipmentType}}}
 Tier: {{{tier}}}
+Character Class: {{{characterClass}}}
 
-Suggest the ideal rune combination:
+Suggest the ideal rune combination, considering the character's build:
 `,config: {
     safetySettings: [
       {
