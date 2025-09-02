@@ -39,12 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
-      if (currentUser) {
-        router.push('/');
-      }
     });
     return () => unsubscribe();
-  }, [router]);
+  }, []);
 
   const signUp = async (email: string, password: string) => {
     if (!ALLOWED_EMAILS.includes(email)) {
@@ -78,7 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/');
     } catch (error: any) {
        toast({
           variant: "destructive",

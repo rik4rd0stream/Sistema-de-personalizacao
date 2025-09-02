@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Gem, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const { logIn, signUp } = useAuth();
+  const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +39,7 @@ export default function LoginPage() {
         setIsSignUp(false); // Volta para a tela de login
       } else {
         await logIn(email, password);
-        // O redirecionamento será tratado pelo AuthProvider
+        router.push('/');
       }
     } catch (error: any) {
       // Erros já são tratados e exibidos pelo auth-context
