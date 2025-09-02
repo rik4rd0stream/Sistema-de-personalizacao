@@ -7,7 +7,6 @@ import {
   signInWithEmailAndPassword, 
   signOut,
   createUserWithEmailAndPassword,
-  connectAuthEmulator
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -30,19 +29,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Connect to emulator in development
-    if (process.env.NODE_ENV === 'development') {
-      // Check if emulator is already connected to prevent errors
-      if (!auth.emulatorConfig) {
-        try {
-          connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
-          console.log("Firebase Auth Emulator connected on client.");
-        } catch (error) {
-          console.error("Error connecting to Firebase Auth Emulator on client:", error);
-        }
-      }
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
