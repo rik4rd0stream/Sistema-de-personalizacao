@@ -1,3 +1,4 @@
+
 'use client';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import type { Equipment } from '@/app/personagem/[id]/runas/page';
@@ -12,7 +13,6 @@ interface EquipmentCardProps {
   onRuneChange: (equipmentId: string, runeIndex: number, fragmentIndex: number, value: string) => void;
   idealRunesForTier: IdealRune[];
   allCurrentRunes: string[];
-  availableRunes: string[];
   openRuneSlotDialog: (identifier: RuneSlotIdentifier) => void;
 }
 
@@ -25,7 +25,7 @@ const getRuneColorClass = (runeName: string): string => {
     return 'bg-gray-500';
 };
 
-export function EquipmentCard({ equipment, tier, onRuneChange, idealRunesForTier, allCurrentRunes, availableRunes, openRuneSlotDialog }: EquipmentCardProps) {
+export function EquipmentCard({ equipment, tier, onRuneChange, idealRunesForTier, allCurrentRunes, openRuneSlotDialog }: EquipmentCardProps) {
   const Icon = equipment.icon;
   const numberOfRunes = tier === 2 ? 2 : 3;
 

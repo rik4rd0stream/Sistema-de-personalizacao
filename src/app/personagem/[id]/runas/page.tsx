@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { EQUIPMENT_TYPES } from '@/lib/constants';
+import { EQUIPMENT_TYPES, ALL_RUNE_FRAGMENTS } from '@/lib/constants';
 import type { EquipmentType } from '@/lib/constants';
 import { EquipmentCard } from '@/components/equipment-card';
 import { IdealRunesSummary, type IdealRune } from '@/components/ideal-runes-summary';
@@ -201,10 +201,9 @@ export default function CharacterRunesPage() {
     }
   }, [user, characterId, tier, equipments, toast]);
   
-  const availableRunesForTier = useMemo(() => {
-    const idealRuneNames = idealRunesForTier.map(r => r.name);
-    return ['EMPTY_SLOT', ...Array.from(new Set(idealRuneNames)).sort()];
-  }, [idealRunesForTier]);
+  const availableRunesForDialog = useMemo(() => {
+    return ['EMPTY_SLOT', ...ALL_RUNE_FRAGMENTS];
+  }, []);
 
   const currentlyEditingEquipment = useMemo(() => {
     if (!editingRuneSlot) return null;
@@ -261,7 +260,6 @@ export default function CharacterRunesPage() {
                   onRuneChange={handleRuneChange}
                   idealRunesForTier={idealRunesForTier}
                   allCurrentRunes={allCurrentFragments}
-                  availableRunes={availableRunesForTier}
                   openRuneSlotDialog={openRuneSlotDialog}
                 />
               ))}
@@ -283,7 +281,7 @@ export default function CharacterRunesPage() {
                 onClose={closeRuneSlotDialog}
                 equipment={currentlyEditingEquipment}
                 runeIndex={editingRuneSlot.runeIndex}
-                availableFragments={availableRunesForTier}
+                availableFragments={availableRunesForDialog}
                 onFragmentChange={handleRuneChange}
             />
         )}
