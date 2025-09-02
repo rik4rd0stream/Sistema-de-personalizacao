@@ -22,7 +22,7 @@ interface Character {
     createdAt: Timestamp;
 }
 
-const CHARACTER_CLASSES = ["ENE", "Elfa AGI", "DW ENE", "DW AGI", "DK ENE", "DK STR", "DL ENE", "DL STR"];
+const CHARACTER_CLASSES = ["ELFA ENE", "Elfa AGI", "DW ENE", "DW AGI", "DK ENE", "DK STR", "DL ENE", "DL STR"];
 
 
 export default function CharactersPage() {
