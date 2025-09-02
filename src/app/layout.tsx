@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
-  title: 'Otimizador de Runas',
-  description: 'Organize e otimize as runas do seu equipamento de jogo.',
+  title: 'Personalização de Personagem',
+  description: 'Personalize seus personagens, otimizando runas e muito mais.',
 };
 
 export default function RootLayout({
