@@ -1,19 +1,24 @@
 
 'use client';
 import { useMemo } from 'react';
-import type { IdealRune } from '@/lib/runes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
-import { Gem } from 'lucide-react';
+import { Gem, Loader2 } from 'lucide-react';
+
+export interface IdealRune {
+  name: string;
+  count: number;
+}
 
 interface IdealRunesSummaryProps {
   idealRunesForTier: IdealRune[];
   allCurrentRunes: string[];
   tier: number;
+  isLoading: boolean;
 }
 
-export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier }: IdealRunesSummaryProps) {
+export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier, isLoading }: IdealRunesSummaryProps) {
   const missingRunes = useMemo(() => {
     if (idealRunesForTier.length === 0) return [];
 
@@ -35,11 +40,21 @@ export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier }: 
   const currentRunesCount = useMemo(() => missingRunes.reduce((sum, r) => sum + r.currentCount, 0), [missingRunes]);
 
   const renderContent = () => {
+    if (isLoading) {
+       return (
+        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 h-[calc(100vh-220px)]">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p>Carregando runas ideais...</p>
+        </div>
+      );
+    }
+    
     if (idealRunesForTier.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8">
+        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 h-[calc(100vh-220px)]">
             <Gem className="h-12 w-12 mb-4" />
             <p>Nenhuma runa ideal cadastrada para o Tier {tier}.</p>
+            <p className="text-xs mt-2">Um administrador pode adicioná-las no painel de admin.</p>
         </div>
       );
     }
@@ -66,7 +81,9 @@ export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier }: 
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Fragmentos Ideais</CardTitle>
-            <CardDescription>Faltam {totalRunesCount - currentRunesCount} de {totalRunesCount} fragmentos</CardDescription>
+            {!isLoading && idealRunesForTier.length > 0 && (
+                <CardDescription>Faltam {totalRunesCount - currentRunesCount} de {totalRunesCount} fragmentos</CardDescription>
+            )}
           </div>
           <Badge variant="secondary" className="text-base">Tier {tier}</Badge>
         </div>

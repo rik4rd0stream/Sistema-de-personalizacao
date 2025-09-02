@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { Header } from '@/components/layout/Header';
-import { Loader2, ShieldCheck, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, ShieldCheck, CheckCircle, XCircle, Gem, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { UserProfile } from '@/contexts/auth-context';
+import Link from 'next/link';
 
 export default function AdminPage() {
     const { user, userProfile, loading: authLoading } = useAuth();
@@ -37,17 +38,13 @@ export default function AdminPage() {
             const fetchPendingUsers = async () => {
                 setIsLoading(true);
                 try {
-                    // A query pode falhar se o índice composto do Firestore não existir.
-                    // O Firebase geralmente fornece um link no console de logs para criar o índice.
                     const usersCollectionRef = collection(db, 'users');
                     const q = query(usersCollectionRef, where('status', '==', 'pending'));
                     const querySnapshot = await getDocs(q);
-                    const users = querySnapshot.docs.map(doc => doc.data() as UserProfile);
+                    const users = querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id } as UserProfile));
                     setPendingUsers(users);
                 } catch (error) {
                     console.error("Error fetching pending users. Firestore index might be missing.", error);
-                    // Não mostraremos um toast de erro aqui para evitar confundir o usuário.
-                    // A página simplesmente mostrará que não há usuários pendentes.
                 } finally {
                     setIsLoading(false);
                 }
@@ -95,6 +92,27 @@ export default function AdminPage() {
                     <div className="mb-6 flex items-center gap-3">
                         <ShieldCheck className="h-8 w-8 text-primary"/>
                         <h1 className="text-3xl font-bold tracking-tight text-primary">Painel do Administrador</h1>
+                    </div>
+
+                    <div className="mb-8 grid gap-4 md:grid-cols-2">
+                        <Link href={`/admin/runas`} legacyBehavior>
+                            <a className="block">
+                                <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <Gem className="h-8 w-8 text-accent"/>
+                                            <div>
+                                                <CardTitle>Gerenciar Runas Ideais</CardTitle>
+                                                <CardDescription>
+                                                    Edite a lista de runas para cada tier.
+                                                </CardDescription>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="h-6 w-6 text-muted-foreground"/>
+                                    </CardHeader>
+                                </Card>
+                            </a>
+                        </Link>
                     </div>
 
                     <Card>

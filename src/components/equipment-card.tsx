@@ -1,7 +1,7 @@
 'use client';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import type { Equipment } from '@/app/personagem/[id]/runas/page';
-import type { IdealRune } from '@/lib/runes';
+import type { IdealRune } from '@/components/ideal-runes-summary';
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import type { RuneSlotIdentifier } from "@/app/personagem/[id]/runas/page";
