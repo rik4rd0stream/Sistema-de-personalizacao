@@ -63,7 +63,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Gem className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">{isSignUp ? 'Criar Conta' : 'Personalização de Personagem'}</CardTitle>
+          <CardTitle className="text-2xl">{isSignUp ? 'Criar Conta' : 'Dark Epoch Builder'}</CardTitle>
           <CardDescription>
             {isSignUp ? 'Crie sua conta para começar a gerenciar.' : 'Faça login para gerenciar seus equipamentos.'}
           </CardDescription>

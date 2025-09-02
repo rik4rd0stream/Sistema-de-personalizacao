@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
-  title: 'Personalização de Personagem',
-  description: 'Personalize seus personagens, otimizando runas e muito mais.',
+  title: 'Dark Epoch Builder',
+  description: 'Construa e otimize seus personagens para MU Dark Epoch.',
 };
 
 export default function RootLayout({
