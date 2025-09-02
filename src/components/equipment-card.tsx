@@ -1,10 +1,11 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle } from 'lucide-react';
-import type { Equipment } from '@/app/page';
+import type { Equipment } from '@/app/personagem/[id]/runas/page';
 import type { IdealRune } from '@/lib/runes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RuneSuggestionDialog } from './rune-suggestion-dialog';
+import { cn } from "@/lib/utils";
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -15,6 +16,14 @@ interface EquipmentCardProps {
   allCurrentRunes: string[];
   availableRunes: string[];
 }
+
+const getRuneColorClass = (runeName: string): string => {
+    if (runeName.includes('(Amarelo)')) return 'bg-yellow-400';
+    if (runeName.includes('(Roxo)')) return 'bg-purple-500';
+    if (runeName.includes('(Verde)')) return 'bg-green-500';
+    if (runeName.includes('(Vermelho)')) return 'bg-red-500';
+    return 'hidden';
+};
 
 export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealRunesForTier, allCurrentRunes, availableRunes }: EquipmentCardProps) {
   const Icon = equipment.icon;
@@ -51,12 +60,20 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealR
                 <div key={`current-${index}`} className="flex flex-1 items-center gap-2">
                   <Select value={currentRune || 'EMPTY_SLOT'} onValueChange={(value) => onRuneChange(equipment.id, index, value)}>
                     <SelectTrigger className="h-9">
-                      <SelectValue placeholder={`Runa ${index + 1}`} />
+                        <SelectValue asChild>
+                            <div className="flex items-center gap-2">
+                                <div className={cn("h-3 w-3 rounded-full", getRuneColorClass(currentRune || ''))}></div>
+                                <span>{currentRune || `Runa ${index + 1}`}</span>
+                            </div>
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {availableRunes.map(runeName => (
                         <SelectItem key={runeName} value={runeName}>
-                          {runeName === 'EMPTY_SLOT' ? 'Vazio' : runeName}
+                         <div className="flex items-center gap-3">
+                            <div className={cn("h-3 w-3 rounded-full", getRuneColorClass(runeName))}></div>
+                            <span>{runeName === 'EMPTY_SLOT' ? 'Vazio' : runeName}</span>
+                         </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
