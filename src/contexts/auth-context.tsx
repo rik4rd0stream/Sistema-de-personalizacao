@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { 
   onAuthStateChanged, 
   User, 
-  createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut 
 } from 'firebase/auth';
@@ -38,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // O redirecionamento será tratado pela página principal
     } catch (error: any) {
        toast({
           variant: "destructive",
@@ -54,6 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.push('/login');
     } catch (error) {
       console.error("Erro ao fazer logout", error);
+       toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Ocorreu um erro ao tentar fazer logout.",
+        });
     }
   };
 

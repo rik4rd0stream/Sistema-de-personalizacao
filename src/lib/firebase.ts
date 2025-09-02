@@ -1,5 +1,6 @@
+'use client';
 // Import the functions you need from the SDKs you need
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 
@@ -14,15 +15,23 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Initialize Firebase services
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Se estiver em ambiente de desenvolvimento, conecte ao emulador de autenticação
+// Connect to emulators in development
 if (process.env.NODE_ENV === 'development') {
-    connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
+    // Check if running in the browser and emulators are not already connected
+    if (typeof window !== 'undefined' && !auth.emulatorConfig) {
+        try {
+            connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
+            console.log("Conectado ao Emulador de Autenticação.");
+        } catch (e) {
+            console.error("Erro ao conectar ao emulador de autenticação:", e);
+        }
+    }
 }
 
 

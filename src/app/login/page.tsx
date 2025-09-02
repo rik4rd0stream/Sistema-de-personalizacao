@@ -32,7 +32,7 @@ export default function LoginPage() {
       await logIn(email, password);
       router.push('/');
     } catch (error: any) {
-      // Erros já são tratados e exibidos pelo auth-context
+      // O toast de erro já é exibido pelo auth-context
     } finally {
       setLoading(false);
     }
