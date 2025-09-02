@@ -33,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Connect to emulator in development
     if (process.env.NODE_ENV === 'development') {
       // Check if emulator is already connected to prevent errors
-      // The `auth.emulatorConfig` check prevents this from running on every render.
       if (!auth.emulatorConfig) {
         try {
           connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
