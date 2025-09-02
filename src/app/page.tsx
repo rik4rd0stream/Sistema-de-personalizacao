@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -10,6 +11,8 @@ import { EquipmentCard } from '@/components/equipment-card';
 import { IDEAL_RUNES_BY_TIER } from '@/lib/runes';
 import { IdealRunesSummary } from '@/components/ideal-runes-summary';
 import { Card } from '@/components/ui/card';
+import { useAuth } from '@/contexts/auth-context';
+import { Loader2 } from 'lucide-react';
 
 export interface Equipment {
   id: string;
@@ -27,8 +30,16 @@ function getInitialEquipmentState(tier: number): Equipment[] {
 }
 
 export default function Home() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [tier, setTier] = useState<number>(9);
   const [equipments, setEquipments] = useState<Equipment[]>(() => getInitialEquipmentState(tier));
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   const idealRunesForTier = useMemo(() => IDEAL_RUNES_BY_TIER[tier] || [], [tier]);
   
@@ -56,6 +67,15 @@ export default function Home() {
     const idealRuneNames = idealRunesForTier.map(r => r.name);
     return ['EMPTY_SLOT', ...new Set(idealRuneNames)].sort();
   }, [idealRunesForTier]);
+
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
