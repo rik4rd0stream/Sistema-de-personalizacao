@@ -1,13 +1,15 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Permite que um usuário leia/escreva em seu próprio documento de usuário
+    match /users/{userId} {
+      allow read, update, delete: if request.auth.uid == userId;
+      allow create: if request.auth.uid != null;
     }
 
-    match /users/{userId}/idealRunes/{characterClass}/{tierDoc} {
-       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    // Permite acesso total às subcoleções de um usuário, como 'characters' e as configurações de 'runes' dentro deles.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth.uid == userId;
     }
   }
 }
