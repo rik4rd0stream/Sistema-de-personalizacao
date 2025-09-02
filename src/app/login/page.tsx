@@ -39,7 +39,7 @@ export default function LoginPage() {
         setIsSignUp(false); // Volta para a tela de login
       } else {
         await logIn(email, password);
-        router.push('/');
+        // O redirecionamento agora é tratado pelo AuthProvider
       }
     } catch (error: any) {
       // Erros já são tratados e exibidos pelo auth-context
