@@ -13,7 +13,7 @@ import { IdealRunesSummary, type IdealRune } from '@/components/ideal-runes-summ
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { doc, getDoc, setDoc, updateDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ export interface RuneSlotIdentifier {
 
 
 function getInitialEquipmentState(tier: number): Equipment[] {
-  const fragmentSlots = (tier === 2 ? 2 : 3) * 2;
+  const fragmentSlots = (tier >= 3 ? 3 : 2) * 2;
   return EQUIPMENT_TYPES.map(eq => ({
     ...eq,
     fragments: Array(fragmentSlots).fill(''),
@@ -44,13 +44,13 @@ function getInitialEquipmentState(tier: number): Equipment[] {
 export default function CharacterRunesPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const params = useParams();
+  params = useParams();
   const characterId = params.id as string;
   const { toast } = useToast();
 
   const [characterName, setCharacterName] = useState('');
   const [tier, setTier] = useState<number>(2);
-  const [equipments, setEquipments] = useState<Equipment[]>(() => getInitialEquipmentState(tier));
+  const [equipments, setEquipments] = useState<Equipment[]>(() => getInitialEquipmentState(2));
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingRunes, setIsLoadingRunes] = useState(true);
   const [editingRuneSlot, setEditingRuneSlot] = useState<RuneSlotIdentifier | null>(null);
@@ -81,11 +81,19 @@ export default function CharacterRunesPage() {
                 if (charDoc.exists()) {
                     const data = charDoc.data();
                     setCharacterName(data.name);
-                    const savedRunes = await getDoc(doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config'));
+                    
+                    const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
+                    const savedRunes = await getDoc(savedRunesDocRef);
+
                     if (savedRunes.exists()) {
                       const runesData = savedRunes.data();
                       setTier(runesData.tier);
-                      setEquipments(runesData.equipments);
+                      // Ensure equipment state is consistent with loaded tier
+                      setEquipments(runesData.equipments || getInitialEquipmentState(runesData.tier));
+                    } else {
+                      // If no saved data, initialize with default tier 2
+                      setTier(2);
+                      setEquipments(getInitialEquipmentState(2));
                     }
                 } else {
                     toast({
@@ -108,7 +116,7 @@ export default function CharacterRunesPage() {
             }
         }
     };
-    if (!authLoading && !user) {
+    if (!authLoading && user) {
       fetchCharacterData();
     }
   }, [user, characterId, router, authLoading, toast]);
@@ -133,8 +141,10 @@ export default function CharacterRunesPage() {
   }, [toast, user]);
 
   useEffect(() => {
-    fetchIdealRunes(tier);
-  }, [tier, fetchIdealRunes]);
+    if(!isLoading) {
+      fetchIdealRunes(tier);
+    }
+  }, [tier, fetchIdealRunes, isLoading]);
 
   
   const allCurrentFragments = useMemo(() => {
