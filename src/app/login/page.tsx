@@ -10,12 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { logIn } = useAuth();
+  const { logIn, signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +30,17 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      await logIn(email, password);
-      router.push('/');
+      if (isSignUp) {
+        await signUp(email, password);
+        toast({
+            title: 'Conta criada com sucesso!',
+            description: 'Você já pode fazer o login.',
+        });
+        setIsSignUp(false);
+      } else {
+        await logIn(email, password);
+        router.push('/');
+      }
     } catch (error: any) {
       // O toast de erro já é exibido pelo auth-context
     } finally {
@@ -45,9 +55,9 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Gem className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Otimizador de Runas</CardTitle>
+          <CardTitle className="text-2xl">{isSignUp ? 'Criar Conta' : 'Otimizador de Runas'}</CardTitle>
           <CardDescription>
-            Faça login para gerenciar seus equipamentos.
+            {isSignUp ? 'Crie sua conta para começar a gerenciar.' : 'Faça login para gerenciar seus equipamentos.'}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -79,7 +89,10 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Entrar'}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignUp ? 'Criar conta' : 'Entrar')}
+            </Button>
+             <Button variant="link" type="button" onClick={() => setIsSignUp(!isSignUp)} disabled={loading}>
+              {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem uma conta? Crie uma'}
             </Button>
           </CardFooter>
         </form>

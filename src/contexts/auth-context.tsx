@@ -6,6 +6,7 @@ import {
   User, 
   signInWithEmailAndPassword, 
   signOut,
+  createUserWithEmailAndPassword,
   connectAuthEmulator
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -16,6 +17,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   logIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -61,6 +63,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signUp = async (email: string, password: string) => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+        let description = "Ocorreu um erro ao criar a conta.";
+        if (error.code === 'auth/email-already-in-use') {
+            description = "Este e-mail já está sendo utilizado.";
+        } else if (error.code === 'auth/weak-password') {
+            description = "A senha é muito fraca. Use pelo menos 6 caracteres.";
+        }
+        toast({
+            variant: "destructive",
+            title: "Erro ao Criar Conta",
+            description: description,
+        });
+        throw error;
+    }
+  };
+
   const logOut = async () => {
     try {
       await signOut(auth);
@@ -79,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     loading,
     logIn,
+    signUp,
     logOut,
   };
 
