@@ -1,14 +1,10 @@
-
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle } from 'lucide-react';
 import type { Equipment } from '@/app/personagem/[id]/runas/page';
 import type { IdealRune } from '@/lib/runes';
-import { RuneSuggestionDialog } from './rune-suggestion-dialog';
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import type { RuneSlotIdentifier } from "@/app/personagem/[id]/runas/page";
-import { RuneSlotDialog } from "./rune-slot-dialog";
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -61,7 +57,6 @@ export function EquipmentCard({ equipment, tier, onRuneChange, idealRunesForTier
       <div className="flex-1">
         <div className="flex items-center justify-between">
             <h3 className="font-semibold">{equipment.name}</h3>
-            <RuneSuggestionDialog equipmentType={equipment.name} tier={tier} />
         </div>
         <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {Array.from({ length: numberOfRunes }).map((_, runeIndex) => {
