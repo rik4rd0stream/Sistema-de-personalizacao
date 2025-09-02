@@ -115,7 +115,8 @@ export default function CharacterRunesPage() {
   const runeSlots = useMemo(() => (tier === 2 ? 2 : 3), [tier]);
   const availableRunesForTier = useMemo(() => {
     const idealRuneNames = idealRunesForTier.map(r => r.name);
-    return ['EMPTY_SLOT', ...new Set(idealRuneNames)].sort();
+    // Ensure 'EMPTY_SLOT' is always first and available.
+    return ['EMPTY_SLOT', ...Array.from(new Set(idealRuneNames)).sort()];
   }, [idealRunesForTier]);
 
   if (authLoading || isLoading) {

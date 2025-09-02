@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle } from 'lucide-react';
@@ -18,6 +19,7 @@ interface EquipmentCardProps {
 }
 
 const getRuneColorClass = (runeName: string): string => {
+    if (!runeName) return 'hidden';
     if (runeName.includes('(Amarelo)')) return 'bg-yellow-400';
     if (runeName.includes('(Roxo)')) return 'bg-purple-500';
     if (runeName.includes('(Verde)')) return 'bg-green-500';
@@ -62,7 +64,7 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealR
                     <SelectTrigger className="h-9">
                         <SelectValue asChild>
                             <div className="flex items-center gap-2">
-                                <div className={cn("h-3 w-3 rounded-full", getRuneColorClass(currentRune || ''))}></div>
+                                <div className={cn("h-3 w-3 rounded-full", getRuneColorClass(currentRune))}></div>
                                 <span>{currentRune || `Runa ${index + 1}`}</span>
                             </div>
                         </SelectValue>
