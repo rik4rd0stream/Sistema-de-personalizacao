@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { Loader2, ArrowLeft, Gem } from 'lucide-react';
+import { Loader2, ArrowLeft, Gem, Swords, Shield, ChevronRight } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -12,7 +12,6 @@ import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChevronRight } from 'lucide-react';
 
 export default function CharacterHubPage() {
   const { user, loading: authLoading } = useAuth();
@@ -66,6 +65,13 @@ export default function CharacterHubPage() {
     }
   }, [user, characterId, router, authLoading, toast]);
 
+  const handleComingSoon = () => {
+    toast({
+        title: 'Em construção',
+        description: 'Esta funcionalidade será implementada em breve.',
+    });
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
@@ -97,7 +103,7 @@ export default function CharacterHubPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Link href={`/personagem/${characterId}/runas`} legacyBehavior>
                         <a className="block">
-                            <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer">
+                            <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
                                 <CardHeader className="flex flex-row items-center justify-between">
                                     <div className="flex items-center gap-4">
                                         <Gem className="h-8 w-8 text-accent"/>
@@ -113,6 +119,34 @@ export default function CharacterHubPage() {
                             </Card>
                         </a>
                     </Link>
+                    <Card onClick={handleComingSoon} className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <Swords className="h-8 w-8 text-accent"/>
+                                <div>
+                                    <CardTitle>Conjunto</CardTitle>
+                                    <CardDescription>
+                                        Configure seu conjunto de itens.
+                                    </CardDescription>
+                                </div>
+                            </div>
+                            <ChevronRight className="h-6 w-6 text-muted-foreground"/>
+                        </CardHeader>
+                    </Card>
+                     <Card onClick={handleComingSoon} className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <Shield className="h-8 w-8 text-accent"/>
+                                <div>
+                                    <CardTitle>Cruzada</CardTitle>
+                                    <CardDescription>
+                                        Gerencie sua build para a cruzada.
+                                    </CardDescription>
+                                </div>
+                            </div>
+                            <ChevronRight className="h-6 w-6 text-muted-foreground"/>
+                        </CardHeader>
+                    </Card>
                 </div>
             </div>
         </div>
