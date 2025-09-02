@@ -54,6 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const profile = userDoc.data() as UserProfile;
           setUserProfile(profile);
 
+          const isLoginPage = pathname === '/login';
+
           if (profile.status === 'pending') {
             if (pathname !== '/aguardando-aprovacao') {
                router.push('/aguardando-aprovacao');
@@ -62,21 +64,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await signOut(auth);
             toast({ variant: "destructive", title: "Acesso Negado", description: "Sua conta foi rejeitada." });
           } else if (profile.status === 'approved') {
+             // Se o usuário aprovado estiver na tela de login ou aguardando aprovação, redirecione.
              const publicRoutes = ['/aguardando-aprovacao', '/login'];
              if (publicRoutes.includes(pathname)) {
                router.push('/personagens');
             }
           }
-
         } else {
-            // This case might happen if user is created in Auth but not in Firestore, e.g. manual deletion.
-            // We should log them out to avoid an inconsistent state.
+            // Este caso acontece se o usuário existe na Auth mas não no Firestore (ex: exclusão manual do DB)
             await signOut(auth);
             setUserProfile(null);
         }
       } else {
         setUserProfile(null);
         const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao'];
+        // Se o usuário não está logado e tenta acessar uma rota protegida, redireciona para o login.
         if (protectedRoutes.some(route => pathname.startsWith(route))) {
           router.push('/login');
         }
@@ -90,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // The onAuthStateChanged listener will handle redirection.
+      // O listener onAuthStateChanged cuidará do redirecionamento.
     } catch (error: any) {
        toast({
           variant: "destructive",
@@ -120,18 +122,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: serverTimestamp(),
       });
       
-      if (!isMasterAdmin) {
-          await signOut(auth);
-          toast({
-            title: 'Cadastro enviado!',
-            description: 'Sua conta foi criada e está aguardando aprovação de um administrador.',
-          });
-      } else {
+      if (isMasterAdmin) {
         toast({
             title: 'Conta de Administrador criada!',
             description: 'Login realizado com sucesso.',
         });
       }
+      // O listener onAuthStateChanged cuidará do redirecionamento para a tela de aprovação ou para a home.
       
     } catch (error: any) {
         let description = "Ocorreu um erro ao criar a conta.";

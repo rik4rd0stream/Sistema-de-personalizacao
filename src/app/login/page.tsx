@@ -19,15 +19,7 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
-  useEffect(() => {
-    if (!loading && user && userProfile) {
-        if (userProfile.status === 'approved') {
-            router.push('/personagens');
-        } else if (userProfile.status === 'pending') {
-            router.push('/aguardando-aprovacao');
-        }
-    }
-  }, [user, userProfile, loading, router]);
+  // O useEffect que estava aqui foi removido para centralizar a lógica no AuthContext.
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,18 +35,20 @@ export default function LoginPage() {
     try {
       if (isSignUp) {
         await signUp(email, password);
-        setIsSignUp(false);
+        // Não é mais necessário setar `isSignUp` para false, o contexto irá redirecionar ou exibir a tela de aprovação.
       } else {
         await logIn(email, password);
       }
     } catch (error: any) {
-      // Error toasts are handled by the auth-context
+      // As mensagens de erro já são tratadas no auth-context
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading || (user && userProfile?.status === 'approved')) {
+  // Se o contexto ainda está carregando ou se o usuário já está logado, mostramos um loader.
+  // O AuthContext será responsável por redirecionar para a página correta.
+  if (loading || (user && userProfile)) {
      return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
