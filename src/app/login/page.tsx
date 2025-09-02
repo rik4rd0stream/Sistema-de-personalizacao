@@ -8,11 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Gem, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { user, loading, userProfile, logIn, signUp } = useAuth();
-  const router = useRouter();
+  const { loading, logIn, signUp } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,12 +38,15 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       // Error toasts are handled within the auth context's logIn/signUp functions
-    } finally {
+      // We only set isSubmitting to false here in case of an error.
+      // On success, the component will unmount or be covered by the loading overlay.
       setIsSubmitting(false);
     }
   };
 
-  if (loading || (user && !userProfile)) {
+  // Show a full-page loader if the auth state is loading globally
+  // or if the form has just been submitted.
+  if (loading || isSubmitting) {
      return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -54,7 +55,7 @@ export default function LoginPage() {
     );
   }
 
-  // Render the login/signup form if the user is not logged in and auth state is determined.
+  // Render the login/signup form otherwise
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-secondary/30 p-4">
       <Card className="w-full max-w-sm">
