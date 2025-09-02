@@ -1,3 +1,4 @@
+
 export interface IdealRune {
   name: string;
   count: number;
@@ -21,11 +22,11 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
     { name: 'Fragmento de Congelar (Verde)', count: 7 },
     { name: 'Fragmento de Transição (Verde)', count: 7 },
     { name: 'Fragmento de Meteorito (Verde)', count: 7 },
-    { name: 'Fragmento de Sombra (Amarela)', count: 7 },
-    { name: 'Fragmento de Proteção (Amarela)', count: 7 },
-    { name: 'Fragmento de Artesão (Amarela)', count: 7 },
-    { name: 'Fragmento Inabalável (Amarela)', count: 7 },
-    { name: 'Fragmento de Ataque Poderoso (Amarela)', count: 7 },
+    { name: 'Fragmento de Sombra (Amarelo)', count: 7 },
+    { name: 'Fragmento de Proteção (Amarelo)', count: 7 },
+    { name: 'Fragmento de Artesão (Amarelo)', count: 7 },
+    { name: 'Fragmento Inabalável (Amarelo)', count: 7 },
+    { name: 'Fragmento de Ataque Poderoso (Amarelo)', count: 7 },
   ],
   3: [
     { name: 'Fragmento do Escudo de Veneno (Vermelho)', count: 7 },
@@ -98,7 +99,29 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
     { name: 'Fragmento de Peixe de Ferro (Amarelo)', count: 7 },
     { name: 'Fragmento Base (Amarelo)', count: 7 },
   ],
-  6: [],
+  6: [
+    { name: 'Fragmento de Iluminação (Roxo)', count: 7 },
+    { name: 'Fragmento de Injeção (Roxo)', count: 7 },
+    { name: 'Fragmento Finalizador (Roxo)', count: 7 },
+    { name: 'Proteção contra Veneno (Roxo)', count: 7 },
+    { name: 'Fragmento de Elemento III (Roxo)', count: 7 },
+    { name: 'Fragmento da Praga (Roxo)', count: 7 },
+    { name: 'Fragmento de Cristal (Roxo)', count: 7 },
+    { name: 'Proteção de Gelo (Roxo)', count: 7 },
+    { name: 'Fragmento da Chama Feroz (Roxo)', count: 7 },
+    { name: 'Fragmento Finalizador (Verde)', count: 7 },
+    { name: 'Proteção contra Veneno (Verde)', count: 7 },
+    { name: 'Fragmento de Elemento III (Verde)', count: 7 },
+    { name: 'Fragmento da Praga (Verde)', count: 7 },
+    { name: 'Fragmento de Cristal (Verde)', count: 7 },
+    { name: 'Proteção de Gelo (Verde)', count: 7 },
+    { name: 'Fragmento da Chama Feroz (Verde)', count: 7 },
+    { name: 'Fragmento da Fortaleza (Amarelo)', count: 7 },
+    { name: 'Fragmento Mágico (Amarelo)', count: 7 },
+    { name: 'Fragmento do Espírito Maligno (Amarelo)', count: 7 },
+    { name: 'Fragmento da Morte (Amarelo)', count: 7 },
+    { name: 'Fragmento de Desaparecimento (Amarelo)', count: 7 },
+  ],
   7: [],
   8: [],
   9: [],
@@ -109,5 +132,8 @@ export const ALL_RUNE_FRAGMENTS = [
     ...IDEAL_RUNES_BY_TIER[2].map(rune => rune.name),
     ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name),
     ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[5].map(rune => rune.name)
+    ...IDEAL_RUNES_BY_TIER[5].map(rune => rune.name),
+    ...IDEAL_RUNES_BY_TIER[6].map(rune => rune.name)
 ];
+
+    
