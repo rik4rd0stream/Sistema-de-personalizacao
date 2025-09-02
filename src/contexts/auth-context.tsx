@@ -1,14 +1,20 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { 
+  onAuthStateChanged, 
+  User, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut 
+} from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
 // --- INSTRUÇÃO IMPORTANTE ---
-// Adicione aqui os e-mails dos usuários que terão permissão para acessar a aplicação.
-// Somente os e-mails nesta lista poderão fazer login.
+// Adicione aqui os e-mails dos usuários que terão permissão para CRIAR UMA CONTA.
+// Somente os e-mails nesta lista poderão se cadastrar.
 const ALLOWED_EMAILS = [
   'seu-email-aqui@gmail.com' 
 ];
@@ -16,7 +22,8 @@ const ALLOWED_EMAILS = [
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  logIn: () => Promise<void>;
+  logIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -30,42 +37,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      // Se um usuário estiver logado, verifique se ele está na lista de permissões
-      if (currentUser && !ALLOWED_EMAILS.includes(currentUser.email || '')) {
-        signOut(auth); // Desconecta se não estiver na lista
-        setUser(null);
-      } else {
-        setUser(currentUser);
-      }
+      setUser(currentUser);
       setLoading(false);
+      if (currentUser) {
+        router.push('/');
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
-  const logIn = async () => {
-    const provider = new GoogleAuthProvider();
+  const signUp = async (email: string, password: string) => {
+    if (!ALLOWED_EMAILS.includes(email)) {
+      toast({
+        variant: "destructive",
+        title: "Cadastro não permitido",
+        description: "Este e-mail não tem permissão para se cadastrar.",
+      });
+      throw new Error("Unauthorized email for signup");
+    }
+
     try {
-      const result = await signInWithPopup(auth, provider);
-      const userEmail = result.user.email;
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      let title = "Erro ao Criar Conta";
+      let description = "Ocorreu um problema durante o cadastro. Tente novamente.";
 
-      if (userEmail && ALLOWED_EMAILS.includes(userEmail)) {
-        router.push('/');
-      } else {
-        // Se o usuário não estiver na lista, desconecte-o e mostre um erro
-        await signOut(auth);
-        toast({
-          variant: "destructive",
-          title: "Acesso Negado",
-          description: "Você não tem permissão para acessar esta aplicação.",
-        });
+      if (error.code === 'auth/email-already-in-use') {
+        title = "E-mail já cadastrado";
+        description = "Este e-mail já está sendo utilizado. Tente fazer login.";
+      } else if (error.code === 'auth/weak-password') {
+        title = "Senha Fraca";
+        description = "A senha deve ter pelo menos 6 caracteres.";
       }
-    } catch (error) {
-      console.error("Erro ao fazer login com o Google", error);
+      
+      toast({ variant: "destructive", title, description });
+      throw error;
+    }
+  };
+
+  const logIn = async (email: string, password: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/');
+    } catch (error: any) {
        toast({
           variant: "destructive",
           title: "Erro de Login",
-          description: "Ocorreu um problema durante a autenticação. Tente novamente.",
+          description: "E-mail ou senha inválidos. Verifique suas credenciais.",
         });
+       throw error;
     }
   };
 
@@ -82,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     loading,
     logIn,
+    signUp,
     logOut,
   };
 
