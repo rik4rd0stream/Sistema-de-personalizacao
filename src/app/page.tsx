@@ -42,15 +42,16 @@ export default function Home() {
   };
   
   const handleRuneChange = useCallback((equipmentId: string, runeIndex: number, value: string) => {
+    const finalValue = value === 'EMPTY_SLOT' ? '' : value;
     setEquipments(prev => prev.map(eq => 
       eq.id === equipmentId 
-        ? { ...eq, currentRunes: eq.currentRunes.map((rune, index) => index === runeIndex ? value : rune) }
+        ? { ...eq, currentRunes: eq.currentRunes.map((rune, index) => index === runeIndex ? finalValue : rune) }
         : eq
     ));
   }, []);
   
   const runeSlots = useMemo(() => (tier === 2 ? 2 : 3), [tier]);
-  const uniqueRuneFragments = useMemo(() => ['', ...new Set(ALL_RUNE_FRAGMENTS)].sort(), []);
+  const uniqueRuneFragments = useMemo(() => ['EMPTY_SLOT', ...new Set(ALL_RUNE_FRAGMENTS)].sort(), []);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">

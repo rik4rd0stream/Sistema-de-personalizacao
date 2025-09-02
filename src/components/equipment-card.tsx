@@ -56,14 +56,14 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealR
 
               return (
                 <div key={`current-${index}`} className="flex items-center gap-2">
-                  <Select value={currentRune} onValueChange={(value) => onRuneChange(equipment.id, index, value)}>
+                  <Select value={currentRune || 'EMPTY_SLOT'} onValueChange={(value) => onRuneChange(equipment.id, index, value)}>
                     <SelectTrigger>
                       <SelectValue placeholder={`Runa ${index + 1}`} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableRunes.map(runeName => (
                         <SelectItem key={runeName} value={runeName}>
-                          {runeName || 'Vazio'}
+                          {runeName === 'EMPTY_SLOT' ? 'Vazio' : runeName}
                         </SelectItem>
                       ))}
                     </SelectContent>
