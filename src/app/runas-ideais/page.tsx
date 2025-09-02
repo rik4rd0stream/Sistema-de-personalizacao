@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, ChangeEvent, FormEvent } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
@@ -23,6 +23,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { ALL_RUNE_FRAGMENTS } from '@/lib/constants';
 
 export interface IdealRune {
   name: string;
@@ -39,6 +40,9 @@ export default function UserRunesPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
+    const [newRuneName, setNewRuneName] = useState('');
+    const [newRuneCount, setNewRuneCount] = useState('');
+
     const [editingRune, setEditingRune] = useState<IdealRune | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -48,30 +52,30 @@ export default function UserRunesPage() {
         }
     }, [user, authLoading, router]);
     
-    useEffect(() => {
-        const fetchIdealRunes = async () => {
-            if (!user) return;
-            setIsLoading(true);
-            try {
-                const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
-                const docSnap = await getDoc(runesDocRef);
-                if (docSnap.exists()) {
-                    setIdealRunes(docSnap.data().runes as IdealRune[]);
-                } else {
-                    setIdealRunes([]);
-                }
-            } catch (error) {
-                console.error("Error fetching ideal runes:", error);
-                toast({ variant: 'destructive', title: 'Erro ao buscar runas', description: 'Não foi possível carregar a lista de runas ideais.' });
-            } finally {
-                setIsLoading(false);
+    const fetchIdealRunes = useCallback(async (currentTier: number) => {
+        if (!user) return;
+        setIsLoading(true);
+        try {
+            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${currentTier}`);
+            const docSnap = await getDoc(runesDocRef);
+            if (docSnap.exists()) {
+                setIdealRunes(docSnap.data().runes as IdealRune[]);
+            } else {
+                setIdealRunes([]);
             }
-        };
-        
-        if (user) {
-            fetchIdealRunes();
+        } catch (error) {
+            console.error("Error fetching ideal runes:", error);
+            toast({ variant: 'destructive', title: 'Erro ao buscar runas', description: 'Não foi possível carregar a lista de runas ideais.' });
+        } finally {
+            setIsLoading(false);
         }
-    }, [user, tier, toast]);
+    }, [user, toast]);
+
+    useEffect(() => {
+        if (user) {
+            fetchIdealRunes(tier);
+        }
+    }, [user, tier, fetchIdealRunes]);
 
 
     const handleTierChange = (newTierValue: string) => {
@@ -79,16 +83,15 @@ export default function UserRunesPage() {
         setTier(newTier);
     };
 
-    const handleAddRune = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleAddRune = async (e: FormEvent) => {
         e.preventDefault();
         if (!user) return;
         
-        const form = e.currentTarget;
-        const runeName = (form.elements.namedItem('runeName') as HTMLInputElement).value.trim();
-        const runeCount = parseInt((form.elements.namedItem('runeCount') as HTMLInputElement).value, 10);
+        const runeName = newRuneName;
+        const runeCount = parseInt(newRuneCount, 10);
 
-        if (!runeName || isNaN(runeCount)) {
-            toast({ variant: 'destructive', title: 'Campos inválidos' });
+        if (!runeName || isNaN(runeCount) || runeCount <= 0) {
+            toast({ variant: 'destructive', title: 'Campos inválidos', description: 'Selecione um fragmento e insira uma contagem válida.' });
             return;
         }
 
@@ -100,6 +103,13 @@ export default function UserRunesPage() {
             const docSnap = await getDoc(runesDocRef);
             
             if (docSnap.exists()) {
+                // Check if rune already exists
+                const existingRunes = docSnap.data().runes as IdealRune[];
+                if (existingRunes.some(r => r.name === newRune.name)) {
+                     toast({ variant: 'destructive', title: 'Fragmento já existe', description: 'Este fragmento já foi adicionado para este tier. Edite o existente se necessário.' });
+                     setIsSubmitting(false);
+                     return;
+                }
                 await updateDoc(runesDocRef, { runes: arrayUnion(newRune) });
             } else {
                 await setDoc(runesDocRef, { runes: [newRune] });
@@ -107,7 +117,8 @@ export default function UserRunesPage() {
             
             setIdealRunes(prev => [...prev, newRune].sort((a,b) => a.name.localeCompare(b.name)));
             toast({ title: 'Runa adicionada com sucesso!' });
-            form.reset();
+            setNewRuneName('');
+            setNewRuneCount('');
         } catch (error) {
             console.error("Error adding rune:", error);
             toast({ variant: 'destructive', title: 'Erro ao adicionar runa' });
@@ -122,14 +133,13 @@ export default function UserRunesPage() {
         setIsSubmitting(true);
         try {
             const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
-            // Firestore does not deeply compare objects in arrays. We need to fetch the exact object.
             const docSnap = await getDoc(runesDocRef);
             if (docSnap.exists()) {
                  const existingRunes = docSnap.data().runes as IdealRune[];
                  const runeInDb = existingRunes.find(r => r.name === runeToRemove.name && r.count === runeToRemove.count);
                 if (runeInDb) {
                      await updateDoc(runesDocRef, { runes: arrayRemove(runeInDb) });
-                     setIdealRunes(prev => prev.filter(r => r.name !== runeToRemove.name));
+                     setIdealRunes(prev => prev.filter(r => r.name !== runeToRemove.name || r.count !== runeToRemove.count));
                      toast({ title: 'Runa removida com sucesso!' });
                 }
             }
@@ -149,7 +159,7 @@ export default function UserRunesPage() {
         const newName = (form.elements.namedItem('editRuneName') as HTMLInputElement).value.trim();
         const newCount = parseInt((form.elements.namedItem('editRuneCount') as HTMLInputElement).value, 10);
         
-        if (!newName || isNaN(newCount)) {
+        if (!newName || isNaN(newCount) || newCount <= 0) {
             toast({ variant: 'destructive', title: 'Campos inválidos' });
             return;
         }
@@ -159,13 +169,29 @@ export default function UserRunesPage() {
         
         try {
             const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
-            const batch = writeBatch(db);
-            // To update an object in an array, we must remove the old one and add the new one.
-            batch.update(runesDocRef, { runes: arrayRemove(editingRune) });
-            batch.update(runesDocRef, { runes: arrayUnion(updatedRune) });
-            await batch.commit();
+            const docSnap = await getDoc(runesDocRef);
 
-            setIdealRunes(prev => prev.map(r => r.name === editingRune.name ? updatedRune : r).sort((a,b) => a.name.localeCompare(b.name)));
+            if (!docSnap.exists()) {
+                throw new Error("Document does not exist to update.");
+            }
+            
+            const existingRunes = docSnap.data().runes as IdealRune[];
+            
+            // If the name hasn't changed, just update the count.
+            if (editingRune.name === updatedRune.name) {
+                 const newRunes = existingRunes.map(r => r.name === updatedRune.name ? updatedRune : r);
+                 await setDoc(runesDocRef, { runes: newRunes });
+                 setIdealRunes(newRunes.sort((a,b) => a.name.localeCompare(b.name)));
+            } else {
+                 // If the name changed, we do a remove and add.
+                const batch = writeBatch(db);
+                batch.update(runesDocRef, { runes: arrayRemove(editingRune) });
+                batch.update(runesDocRef, { runes: arrayUnion(updatedRune) });
+                await batch.commit();
+                
+                 setIdealRunes(prev => [...prev.filter(r => r.name !== editingRune.name), updatedRune].sort((a, b) => a.name.localeCompare(b.name)));
+            }
+
             toast({ title: 'Runa atualizada com sucesso!' });
             setIsEditModalOpen(false);
             setEditingRune(null);
@@ -177,7 +203,6 @@ export default function UserRunesPage() {
             setIsSubmitting(false);
         }
     }
-
 
     if (authLoading) {
         return (
@@ -221,11 +246,38 @@ export default function UserRunesPage() {
                             <form onSubmit={handleAddRune} className="flex items-end gap-4">
                                 <div className="flex-grow space-y-2">
                                     <Label htmlFor="runeName">Nome do Fragmento</Label>
-                                    <Input id="runeName" name="runeName" placeholder="Ex: Fragmento de Maldição (Roxo)" required disabled={isSubmitting}/>
+                                    <Select 
+                                        value={newRuneName} 
+                                        onValueChange={setNewRuneName}
+                                        disabled={isSubmitting}
+                                    >
+                                        <SelectTrigger id="runeName">
+                                            <SelectValue placeholder="Selecione o fragmento" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {ALL_RUNE_FRAGMENTS.map(fragment => (
+                                                <SelectItem key={fragment} value={fragment}>
+                                                    {fragment}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="runeCount">Contagem</Label>
-                                    <Input id="runeCount" name="runeCount" type="number" placeholder="Ex: 14" required disabled={isSubmitting} className="w-24"/>
+                                    <Input 
+                                        id="runeCount" 
+                                        name="runeCount" 
+                                        type="text" 
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        placeholder="Ex: 14" 
+                                        required 
+                                        disabled={isSubmitting} 
+                                        className="w-24"
+                                        value={newRuneCount}
+                                        onChange={(e: ChangeEvent<HTMLInputElement>) => setNewRuneCount(e.target.value.replace(/[^0-9]/g, ''))}
+                                    />
                                 </div>
                                 <Button type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? <Loader2 className="animate-spin" /> : "Adicionar"}
@@ -283,11 +335,19 @@ export default function UserRunesPage() {
                             <div className="space-y-4 py-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="editRuneName">Nome do Fragmento</Label>
-                                    <Input id="editRuneName" name="editRuneName" defaultValue={editingRune.name} required/>
+                                    <Input id="editRuneName" name="editRuneName" defaultValue={editingRune.name} required disabled/>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="editRuneCount">Contagem</Label>
-                                    <Input id="editRuneCount" name="editRuneCount" type="number" defaultValue={editingRune.count} required/>
+                                    <Input 
+                                      id="editRuneCount" 
+                                      name="editRuneCount" 
+                                      type="text" 
+                                      inputMode="numeric"
+                                      pattern="[0-9]*"
+                                      defaultValue={editingRune.count} 
+                                      required
+                                    />
                                 </div>
                             </div>
                             <DialogFooter>
