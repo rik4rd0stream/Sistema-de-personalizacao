@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
@@ -10,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { user, loading, logIn, signUp } = useAuth();
+  const { user, loading, userProfile, logIn, signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -19,10 +20,14 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-        router.push('/personagens');
+    if (!loading && user && userProfile) {
+        if (userProfile.status === 'approved') {
+            router.push('/personagens');
+        } else if (userProfile.status === 'pending') {
+            router.push('/aguardando-aprovacao');
+        }
     }
-  }, [user, loading, router])
+  }, [user, userProfile, loading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,20 +43,18 @@ export default function LoginPage() {
     try {
       if (isSignUp) {
         await signUp(email, password);
-        // On success, the auth-context handles toasts and redirection logic after approval.
-        setIsSignUp(false); // Switch back to login view
+        setIsSignUp(false);
       } else {
         await logIn(email, password);
-        // On success, the auth-context handles redirection.
       }
     } catch (error: any) {
-      // Error toasts are already handled by the auth-context
+      // Error toasts are handled by the auth-context
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading || user) {
+  if (loading || (user && userProfile?.status === 'approved')) {
      return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

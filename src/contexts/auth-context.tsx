@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -44,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
       setUser(currentUser);
       if (currentUser) {
         const userDocRef = doc(db, 'users', currentUser.uid);
@@ -56,34 +58,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (pathname !== '/aguardando-aprovacao') {
                router.push('/aguardando-aprovacao');
             }
+          } else if (profile.status === 'rejected') {
+            await signOut(auth);
+            toast({ variant: "destructive", title: "Acesso Negado", description: "Sua conta foi rejeitada." });
           } else if (profile.status === 'approved') {
-            const allowedRoutes = ['/aguardando-aprovacao', '/login'];
-             if (allowedRoutes.includes(pathname)) {
+             const publicRoutes = ['/aguardando-aprovacao', '/login'];
+             if (publicRoutes.includes(pathname)) {
                router.push('/personagens');
             }
-          } else { // rejected
-             await signOut(auth);
           }
 
         } else {
-            // This case might happen if user is created in Auth but not in Firestore
-            // For now, we log them out.
+            // This case might happen if user is created in Auth but not in Firestore, e.g. manual deletion.
+            // We should log them out to avoid an inconsistent state.
             await signOut(auth);
             setUserProfile(null);
         }
       } else {
         setUserProfile(null);
+        const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao'];
+        if (protectedRoutes.some(route => pathname.startsWith(route))) {
+          router.push('/login');
+        }
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [router, pathname]);
+  }, [router, pathname, toast]);
 
   const logIn = async (email: string, password: string) => {
     try {
-      // The onAuthStateChanged listener will handle redirection
       await signInWithEmailAndPassword(auth, email, password);
+      // The onAuthStateChanged listener will handle redirection.
     } catch (error: any) {
        toast({
           variant: "destructive",
@@ -99,11 +106,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
 
+      const isMasterAdmin = newUser.email === MASTER_ADMIN_EMAIL;
+
       const newUserProfile: Omit<UserProfile, 'createdAt'> = {
           uid: newUser.uid,
           email: newUser.email!,
-          role: newUser.email === MASTER_ADMIN_EMAIL ? 'admin' : 'user',
-          status: newUser.email === MASTER_ADMIN_EMAIL ? 'approved' : 'pending',
+          role: isMasterAdmin ? 'admin' : 'user',
+          status: isMasterAdmin ? 'approved' : 'pending',
       };
 
       await setDoc(doc(db, "users", newUser.uid), {
@@ -111,23 +120,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: serverTimestamp(),
       });
       
-      // Log out the user immediately after sign up
-      // They will need to wait for approval
-      if (newUser.email !== MASTER_ADMIN_EMAIL) {
+      if (!isMasterAdmin) {
           await signOut(auth);
           toast({
             title: 'Cadastro enviado!',
             description: 'Sua conta foi criada e está aguardando aprovação de um administrador.',
           });
-          router.push('/login');
       } else {
         toast({
             title: 'Conta de Administrador criada!',
             description: 'Login realizado com sucesso.',
         });
       }
-
-
+      
     } catch (error: any) {
         let description = "Ocorreu um erro ao criar a conta.";
         if (error.code === 'auth/email-already-in-use') {
@@ -166,10 +171,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     logOut,
   };
-
-  if (loading) {
-    return null; // or a loading spinner covering the whole page
-  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
