@@ -1,10 +1,10 @@
 'use client';
-import type { ChangeEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { CheckCircle2, XCircle } from 'lucide-react';
 import type { Equipment } from '@/app/page';
 import type { IdealRune } from '@/lib/runes';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RuneSuggestionDialog } from './rune-suggestion-dialog';
 
 interface EquipmentCardProps {
   equipment: Equipment;
@@ -13,9 +13,10 @@ interface EquipmentCardProps {
   onRuneChange: (equipmentId: string, runeIndex: number, value: string) => void;
   idealRunesForTier: IdealRune[];
   allCurrentRunes: string[];
+  availableRunes: string[];
 }
 
-export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealRunesForTier, allCurrentRunes }: EquipmentCardProps) {
+export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealRunesForTier, allCurrentRunes, availableRunes }: EquipmentCardProps) {
   const Icon = equipment.icon;
 
   const isRuneCorrect = (currentRune: string) => {
@@ -39,6 +40,9 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealR
             <CardTitle>{equipment.name}</CardTitle>
             <CardDescription>Tier {tier}</CardDescription>
           </div>
+          <div className="ml-auto">
+            <RuneSuggestionDialog equipmentType={equipment.name} tier={tier} />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="grid gap-6">
@@ -52,16 +56,23 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealR
 
               return (
                 <div key={`current-${index}`} className="flex items-center gap-2">
-                  <Input
-                    value={currentRune}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => onRuneChange(equipment.id, index, e.target.value)}
-                    placeholder={`Runa ${index + 1}`}
-                    className="flex-1"
-                  />
+                  <Select value={currentRune} onValueChange={(value) => onRuneChange(equipment.id, index, value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={`Runa ${index + 1}`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableRunes.map(runeName => (
+                        <SelectItem key={runeName} value={runeName}>
+                          {runeName || 'Vazio'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
                   <div className="w-5 h-5 flex items-center justify-center">
                     {isFilled && idealRunesForTier.length > 0 && (
                         isCorrect ? (
-                            <CheckCircle2 className="text-accent" />
+                            <CheckCircle2 className="text-green-500" />
                         ) : (
                             <XCircle className="text-destructive" />
                         )

@@ -175,13 +175,11 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
 
 // Lista de todas as runas para usar nos seletores
 export const ALL_RUNE_FRAGMENTS = [
-    ...IDEAL_RUNES_BY_TIER[2].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[5].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[6].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[7].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[8].map(rune => rune.name)
-];
-
-    
+  ...IDEAL_RUNES_BY_TIER[2].map(rune => rune.name),
+  ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name),
+  ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name),
+  ...IDEAL_RUNES_BY_TIER[5].map(rune => rune.name),
+  ...IDEAL_RUNES_BY_TIER[6].map(rune => rune.name),
+  ...IDEAL_RUNES_BY_TIER[7].map(rune => rune.name),
+  ...IDEAL_RUNES_BY_TIER[8].map(rune => rune.name)
+].filter((value, index, self) => self.indexOf(value) === index); // Remove duplicatas

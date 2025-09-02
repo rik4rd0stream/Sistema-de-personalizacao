@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { EQUIPMENT_TYPES } from '@/lib/constants';
 import type { EquipmentType } from '@/lib/constants';
 import { EquipmentCard } from '@/components/equipment-card';
-import { IDEAL_RUNES_BY_TIER } from '@/lib/runes';
+import { IDEAL_RUNES_BY_TIER, ALL_RUNE_FRAGMENTS } from '@/lib/runes';
+import { IdealRunesSummary } from '@/components/ideal-runes-summary';
 
 export interface Equipment {
   id: string;
@@ -49,6 +50,7 @@ export default function Home() {
   }, []);
   
   const runeSlots = useMemo(() => (tier === 2 ? 2 : 3), [tier]);
+  const uniqueRuneFragments = useMemo(() => ['', ...new Set(ALL_RUNE_FRAGMENTS)].sort(), []);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -70,6 +72,13 @@ export default function Home() {
             </Select>
           </div>
         </div>
+
+        <IdealRunesSummary
+          idealRunesForTier={idealRunesForTier}
+          allCurrentRunes={allCurrentRunes}
+          tier={tier}
+        />
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {equipments.map(equipment => (
             <EquipmentCard
@@ -80,6 +89,7 @@ export default function Home() {
               runeSlots={runeSlots}
               idealRunesForTier={idealRunesForTier}
               allCurrentRunes={allCurrentRunes}
+              availableRunes={uniqueRuneFragments}
             />
           ))}
         </div>

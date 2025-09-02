@@ -64,9 +64,9 @@ export function RuneSuggestionDialog({ equipmentType, tier }: RuneSuggestionDial
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <Wand2 className="h-4 w-4 mr-1" />
-          Sugerir
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Wand2 className="h-4 w-4" />
+          <span className="sr-only">Sugerir Runas com IA</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
