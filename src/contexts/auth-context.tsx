@@ -51,7 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userDocRef = doc(db, 'users', currentUser.uid);
         let userDoc = await getDoc(userDocRef);
 
-        // If user exists in Auth but not in Firestore, create their profile.
         if (!userDoc.exists()) {
           const isMasterAdmin = currentUser.email === MASTER_ADMIN_EMAIL;
           const newUserProfileData = {
@@ -62,14 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               createdAt: serverTimestamp(),
           };
           await setDoc(userDocRef, newUserProfileData);
-          userDoc = await getDoc(userDocRef); // Re-fetch the document
-          console.log(`Profile created for ${currentUser.email}`);
+          userDoc = await getDoc(userDocRef);
         }
 
         const profile = userDoc.data() as UserProfile;
         setUserProfile(profile);
         
-        // --- Redirection Logic ---
         if (profile.status === 'pending') {
           if (pathname !== '/aguardando-aprovacao') {
             router.push('/aguardando-aprovacao');
@@ -84,7 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } else {
-        // User is not logged in
         setUser(null);
         setUserProfile(null);
         const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao', '/personagem'];
@@ -103,7 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // The onAuthStateChanged listener will handle redirection.
     } catch (error: any) {
        toast({
           variant: "destructive",
@@ -116,17 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const newUser = userCredential.user;
-
-      // The onAuthStateChanged listener will now handle creating the profile document,
-      // so we don't need to duplicate the logic here. It simplifies the flow.
-      
+      await createUserWithEmailAndPassword(auth, email, password);
       toast({
           title: 'Conta criada com sucesso!',
           description: 'Aguarde a aprovação de um administrador.',
       });
-      
     } catch (error: any) {
         let description = "Ocorreu um erro ao criar a conta.";
         if (error.code === 'auth/email-already-in-use') {
@@ -146,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logOut = async () => {
     try {
       await signOut(auth);
-      router.push('/login'); // Redirect to login after sign out
+      router.push('/login');
     } catch (error) {
       console.error("Erro ao fazer logout", error);
        toast({
