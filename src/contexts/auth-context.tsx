@@ -9,7 +9,7 @@ import {
   signOut 
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
 // --- INSTRUÇÃO IMPORTANTE ---
@@ -33,20 +33,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
   const { toast } = useToast();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
-      
-      if (currentUser && pathname === '/login') {
-        router.push('/');
-      }
     });
     return () => unsubscribe();
-  }, [router, pathname]);
+  }, []);
 
   const signUp = async (email: string, password: string) => {
     if (!ALLOWED_EMAILS.includes(email)) {

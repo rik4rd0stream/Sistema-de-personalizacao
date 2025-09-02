@@ -18,6 +18,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
+  const handleAuthSuccess = () => {
+    router.push('/');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -39,7 +43,7 @@ export default function LoginPage() {
         setIsSignUp(false); // Volta para a tela de login
       } else {
         await logIn(email, password);
-        // O redirecionamento agora é tratado pelo AuthProvider
+        handleAuthSuccess();
       }
     } catch (error: any) {
       // Erros já são tratados e exibidos pelo auth-context
