@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Sword, Shield, Shirt, HardHat, Trousers, Hand, Bot, CircleDot, Gem } from 'lucide-react';
+import { Sword, Shield, Shirt, HardHat, Hand, Bot, CircleDot, Gem, RectangleHorizontal } from 'lucide-react';
 
 export interface EquipmentType {
   id: string;
@@ -12,7 +12,7 @@ export const EQUIPMENT_TYPES: EquipmentType[] = [
   { id: 'secondary_weapon', name: 'Arma Secundária', icon: Shield },
   { id: 'chest', name: 'Peito', icon: Shirt },
   { id: 'helmet', name: 'Capacete', icon: HardHat },
-  { id: 'pants', name: 'Calça', icon: Trousers },
+  { id: 'pants', name: 'Calça', icon: RectangleHorizontal },
   { id: 'gloves', name: 'Luvas', icon: Hand },
   { id: 'boots', name: 'Botas', icon: Bot },
   { id: 'ring_1', name: 'Anel 1', icon: CircleDot },
