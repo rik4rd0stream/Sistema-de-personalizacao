@@ -28,7 +28,7 @@ export interface Equipment {
 }
 
 function getInitialEquipmentState(tier: number): Equipment[] {
-  const runeSlots = tier === 2 ? 2 : 3;
+  const runeSlots = (tier === 2 ? 2 : 3) * 2; // Dobrado para 2 fragmentos por runa
   return EQUIPMENT_TYPES.map(eq => ({
     ...eq,
     currentRunes: Array(runeSlots).fill(''),
@@ -112,7 +112,7 @@ export default function CharacterRunesPage() {
     ));
   }, []);
   
-  const runeSlots = useMemo(() => (tier === 2 ? 2 : 3), [tier]);
+  const runeSlots = useMemo(() => (tier === 2 ? 2 : 3) * 2, [tier]); // Dobrado
   const availableRunesForTier = useMemo(() => {
     const idealRuneNames = idealRunesForTier.map(r => r.name);
     // Ensure 'EMPTY_SLOT' is always first and available.
