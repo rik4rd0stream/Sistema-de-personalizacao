@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { CHARACTER_CLASSES } from '@/lib/character-classes';
 
 interface Character {
     id: string;
@@ -21,9 +22,6 @@ interface Character {
     characterClass: string;
     createdAt: Timestamp;
 }
-
-const CHARACTER_CLASSES = ["ELFA ENE", "Elfa AGI", "DW ENE", "DW AGI", "DK ENE", "DK STR", "DL ENE", "DL STR"];
-
 
 export default function CharactersPage() {
     const { user, loading: authLoading } = useAuth();

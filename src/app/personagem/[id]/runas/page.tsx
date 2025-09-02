@@ -49,6 +49,7 @@ export default function CharacterRunesPage() {
   const { toast } = useToast();
 
   const [characterName, setCharacterName] = useState('');
+  const [characterClass, setCharacterClass] = useState('');
   const [tier, setTier] = useState<number>(2);
   const [equipments, setEquipments] = useState<Equipment[]>(() => getInitialEquipmentState(2));
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +81,7 @@ export default function CharacterRunesPage() {
             if (charDoc.exists()) {
                 const data = charDoc.data();
                 setCharacterName(data.name);
+                setCharacterClass(data.characterClass);
                 
                 const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
                 const savedRunes = await getDoc(savedRunesDocRef);
@@ -88,10 +90,8 @@ export default function CharacterRunesPage() {
                   const runesData = savedRunes.data();
                   const savedTier = runesData.tier;
                   setTier(savedTier);
-                  // Ensure equipment state is consistent with loaded tier
                   setEquipments(runesData.equipments || getInitialEquipmentState(savedTier));
                 } else {
-                  // If no saved data, initialize with default tier 2
                   setTier(2);
                   setEquipments(getInitialEquipmentState(2));
                 }
@@ -99,7 +99,7 @@ export default function CharacterRunesPage() {
                 toast({
                     variant: 'destructive',
                     title: 'Acesso Negado',
-                    description: 'Personagem não encontrado ou você não tem permissão para acessá-lo.',
+                    description: 'Personagem não encontrado.',
                 });
                 router.push('/personagens');
             }
@@ -123,11 +123,11 @@ export default function CharacterRunesPage() {
     }
   }, [user, authLoading, fetchCharacterData]);
 
-  const fetchIdealRunes = useCallback(async (selectedTier: number) => {
-      if (!user) return;
+  const fetchIdealRunes = useCallback(async (selectedTier: number, charClass: string) => {
+      if (!user || !charClass) return;
       setIsLoadingRunes(true);
       try {
-          const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${selectedTier}`);
+          const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', charClass, `tier${selectedTier}`);
           const docSnap = await getDoc(runesDocRef);
           if (docSnap.exists()) {
               setIdealRunesForTier(docSnap.data().runes as IdealRune[]);
@@ -143,10 +143,10 @@ export default function CharacterRunesPage() {
   }, [toast, user]);
 
   useEffect(() => {
-    if(!isLoading) {
-      fetchIdealRunes(tier);
+    if(!isLoading && characterClass) {
+      fetchIdealRunes(tier, characterClass);
     }
-  }, [tier, fetchIdealRunes, isLoading]);
+  }, [tier, characterClass, fetchIdealRunes, isLoading]);
 
   
   const allCurrentFragments = useMemo(() => {
@@ -157,7 +157,6 @@ export default function CharacterRunesPage() {
     const newTier = parseInt(newTierValue, 10);
     setTier(newTier);
     
-    // After changing tier, refetch character data which will load saved equipment for that tier or reset
     if (user && characterId) {
         try {
             const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
@@ -270,6 +269,7 @@ export default function CharacterRunesPage() {
               idealRunesForTier={idealRunesForTier}
               allCurrentRunes={allCurrentFragments}
               tier={tier}
+              characterClass={characterClass}
               isLoading={isLoadingRunes}
             />
           </div>

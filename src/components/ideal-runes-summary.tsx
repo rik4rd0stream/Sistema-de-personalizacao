@@ -17,10 +17,11 @@ interface IdealRunesSummaryProps {
   idealRunesForTier: IdealRune[];
   allCurrentRunes: string[];
   tier: number;
+  characterClass: string;
   isLoading: boolean;
 }
 
-export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier, isLoading }: IdealRunesSummaryProps) {
+export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier, characterClass, isLoading }: IdealRunesSummaryProps) {
   const missingRunes = useMemo(() => {
     if (idealRunesForTier.length === 0) return [];
 
@@ -55,9 +56,9 @@ export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier, is
       return (
         <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 h-[calc(100vh-220px)]">
             <Gem className="h-12 w-12 mb-4" />
-            <p className="font-semibold">Nenhuma runa ideal cadastrada para o Tier {tier}.</p>
+            <p className="font-semibold">Nenhuma runa ideal cadastrada para {characterClass} - Tier {tier}.</p>
             <p className="text-xs mt-2 max-w-xs">
-                Vá para a tela de gerenciamento para adicionar os fragmentos que você considera ideais para este tier.
+                Vá para a tela de gerenciamento para adicionar os fragmentos que você considera ideais.
             </p>
             <Button asChild size="sm" className="mt-4">
                 <Link href="/runas-ideais">Gerenciar Minhas Runas</Link>
@@ -85,14 +86,17 @@ export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier, is
   return (
     <Card className="sticky top-24 bg-secondary/30 border-secondary">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-2">
           <div>
             <CardTitle>Fragmentos Ideais</CardTitle>
             {!isLoading && idealRunesForTier.length > 0 && (
-                <CardDescription>Faltam {totalRunesCount - currentRunesCount} de {totalRunesCount} fragmentos</CardDescription>
+                <CardDescription>Faltam {totalRunesCount - currentRunesCount} de {totalRunesCount}</CardDescription>
             )}
           </div>
-          <Badge variant="secondary" className="text-base">Tier {tier}</Badge>
+          <div className='text-right'>
+            <Badge variant="secondary" className="text-base mb-1 whitespace-nowrap">{characterClass}</Badge>
+            <Badge variant="secondary" className="text-base">Tier {tier}</Badge>
+          </div>
         </div>
       </CardHeader>
         <CardContent>

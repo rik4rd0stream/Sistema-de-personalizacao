@@ -20,10 +20,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
 import { ALL_RUNE_FRAGMENTS } from '@/lib/constants';
+import { CHARACTER_CLASSES } from '@/lib/character-classes';
 
 export interface IdealRune {
   name: string;
@@ -36,6 +36,7 @@ export default function UserRunesPage() {
     const { toast } = useToast();
 
     const [tier, setTier] = useState<number>(2);
+    const [characterClass, setCharacterClass] = useState<string>(CHARACTER_CLASSES[0]);
     const [idealRunes, setIdealRunes] = useState<IdealRune[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,11 +53,11 @@ export default function UserRunesPage() {
         }
     }, [user, authLoading, router]);
     
-    const fetchIdealRunes = useCallback(async (currentTier: number) => {
-        if (!user) return;
+    const fetchIdealRunes = useCallback(async (currentTier: number, currentClass: string) => {
+        if (!user || !currentClass) return;
         setIsLoading(true);
         try {
-            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${currentTier}`);
+            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', currentClass, `tier${currentTier}`);
             const docSnap = await getDoc(runesDocRef);
             if (docSnap.exists()) {
                 setIdealRunes(docSnap.data().runes as IdealRune[]);
@@ -73,9 +74,9 @@ export default function UserRunesPage() {
 
     useEffect(() => {
         if (user) {
-            fetchIdealRunes(tier);
+            fetchIdealRunes(tier, characterClass);
         }
-    }, [user, tier, fetchIdealRunes]);
+    }, [user, tier, characterClass, fetchIdealRunes]);
 
 
     const handleTierChange = (newTierValue: string) => {
@@ -83,9 +84,13 @@ export default function UserRunesPage() {
         setTier(newTier);
     };
 
+    const handleClassChange = (newClass: string) => {
+        setCharacterClass(newClass);
+    }
+
     const handleAddRune = async (e: FormEvent) => {
         e.preventDefault();
-        if (!user) return;
+        if (!user || !characterClass) return;
         
         const runeName = newRuneName;
         const runeCount = parseInt(newRuneCount, 10);
@@ -99,14 +104,13 @@ export default function UserRunesPage() {
         const newRune: IdealRune = { name: runeName, count: runeCount };
         
         try {
-            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
+            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', characterClass, `tier${tier}`);
             const docSnap = await getDoc(runesDocRef);
             
             if (docSnap.exists()) {
-                // Check if rune already exists
                 const existingRunes = docSnap.data().runes as IdealRune[];
                 if (existingRunes.some(r => r.name === newRune.name)) {
-                     toast({ variant: 'destructive', title: 'Fragmento já existe', description: 'Este fragmento já foi adicionado para este tier. Edite o existente se necessário.' });
+                     toast({ variant: 'destructive', title: 'Fragmento já existe', description: 'Este fragmento já foi adicionado. Edite o existente se necessário.' });
                      setIsSubmitting(false);
                      return;
                 }
@@ -128,11 +132,11 @@ export default function UserRunesPage() {
     };
 
     const handleRemoveRune = async (runeToRemove: IdealRune) => {
-        if (!user || !confirm(`Tem certeza que deseja remover a runa "${runeToRemove.name}"?`)) return;
+        if (!user || !characterClass || !confirm(`Tem certeza que deseja remover a runa "${runeToRemove.name}"?`)) return;
 
         setIsSubmitting(true);
         try {
-            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
+            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', characterClass, `tier${tier}`);
             const docSnap = await getDoc(runesDocRef);
             if (docSnap.exists()) {
                  const existingRunes = docSnap.data().runes as IdealRune[];
@@ -153,7 +157,7 @@ export default function UserRunesPage() {
     
     const handleUpdateRune = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!editingRune || !user) return;
+        if (!editingRune || !user || !characterClass) return;
 
         const form = e.currentTarget;
         const newName = (form.elements.namedItem('editRuneName') as HTMLInputElement).value.trim();
@@ -168,7 +172,7 @@ export default function UserRunesPage() {
         const updatedRune = { name: newName, count: newCount };
         
         try {
-            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
+            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', characterClass, `tier${tier}`);
             const docSnap = await getDoc(runesDocRef);
 
             if (!docSnap.exists()) {
@@ -176,22 +180,16 @@ export default function UserRunesPage() {
             }
             
             const existingRunes = docSnap.data().runes as IdealRune[];
-            
-            // If the name hasn't changed, just update the count.
-            if (editingRune.name === updatedRune.name) {
-                 const newRunes = existingRunes.map(r => r.name === updatedRune.name ? updatedRune : r);
-                 await setDoc(runesDocRef, { runes: newRunes });
-                 setIdealRunes(newRunes.sort((a,b) => a.name.localeCompare(b.name)));
-            } else {
-                 // If the name changed, we do a remove and add.
-                const batch = writeBatch(db);
-                batch.update(runesDocRef, { runes: arrayRemove(editingRune) });
-                batch.update(runesDocRef, { runes: arrayUnion(updatedRune) });
-                await batch.commit();
-                
-                 setIdealRunes(prev => [...prev.filter(r => r.name !== editingRune.name), updatedRune].sort((a, b) => a.name.localeCompare(b.name)));
+            const oldRune = existingRunes.find(r => r.name === editingRune.name);
+
+            if (!oldRune) {
+                throw new Error("Rune to update not found in database.");
             }
 
+            const newRunes = existingRunes.map(r => r.name === editingRune.name ? updatedRune : r);
+            await setDoc(runesDocRef, { runes: newRunes });
+            setIdealRunes(newRunes.sort((a,b) => a.name.localeCompare(b.name)));
+            
             toast({ title: 'Runa atualizada com sucesso!' });
             setIsEditModalOpen(false);
             setEditingRune(null);
@@ -221,20 +219,35 @@ export default function UserRunesPage() {
                      <div className="mb-6 flex items-center gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight text-primary">Gerenciar Minhas Runas Ideais</h1>
-                            <p className="text-muted-foreground">Adicione, edite ou remova os fragmentos ideais para cada tier.</p>
+                            <p className="text-muted-foreground">Adicione os fragmentos ideais para cada classe e tier.</p>
                         </div>
-                         <div className="ml-auto w-full max-w-[180px]">
-                            <Label htmlFor="tier-select" className="mb-2 block text-muted-foreground">Tier do Set</Label>
-                            <Select value={String(tier)} onValueChange={handleTierChange}>
-                              <SelectTrigger id="tier-select">
-                                <SelectValue placeholder="Selecione o Tier" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Array.from({ length: 8 }, (_, i) => i + 2).map(t => (
-                                  <SelectItem key={t} value={String(t)}>Tier {t}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                         <div className="ml-auto flex items-end gap-4">
+                            <div className="w-full max-w-[180px]">
+                              <Label htmlFor="class-select" className="mb-2 block text-muted-foreground">Classe</Label>
+                              <Select value={characterClass} onValueChange={handleClassChange}>
+                                <SelectTrigger id="class-select">
+                                  <SelectValue placeholder="Selecione a Classe" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {CHARACTER_CLASSES.map(c => (
+                                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="w-full max-w-[180px]">
+                              <Label htmlFor="tier-select" className="mb-2 block text-muted-foreground">Tier do Set</Label>
+                              <Select value={String(tier)} onValueChange={handleTierChange}>
+                                <SelectTrigger id="tier-select">
+                                  <SelectValue placeholder="Selecione o Tier" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 8 }, (_, i) => i + 2).map(t => (
+                                    <SelectItem key={t} value={String(t)}>Tier {t}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
                         </div>
                     </div>
 
@@ -288,7 +301,7 @@ export default function UserRunesPage() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Lista de Fragmentos para o Tier {tier}</CardTitle>
+                            <CardTitle>Lista de Fragmentos para {characterClass} - Tier {tier}</CardTitle>
                         </CardHeader>
                         <CardContent>
                              {isLoading ? (
@@ -314,7 +327,7 @@ export default function UserRunesPage() {
                                 </ul>
                              ) : (
                                 <div className="flex items-center justify-center p-8 border-dashed border rounded-md">
-                                    <p className="text-muted-foreground">Nenhum fragmento ideal cadastrado para este tier.</p>
+                                    <p className="text-muted-foreground">Nenhum fragmento ideal cadastrado para esta classe e tier.</p>
                                 </div>
                              )}
                         </CardContent>
@@ -328,7 +341,7 @@ export default function UserRunesPage() {
                         <DialogHeader>
                             <DialogTitle>Editar Runa Ideal</DialogTitle>
                             <DialogDescription>
-                                Altere o nome ou a contagem necessária para este fragmento.
+                                Altere a contagem necessária para este fragmento.
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleUpdateRune}>
