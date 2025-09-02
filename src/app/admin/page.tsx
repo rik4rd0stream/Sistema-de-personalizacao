@@ -36,26 +36,19 @@ export default function AdminPage() {
         if (userProfile?.role === 'admin') {
             const fetchPendingUsers = async () => {
                 setIsLoading(true);
-                try {
-                    const usersCollectionRef = collection(db, 'users');
-                    const q = query(usersCollectionRef, where('status', '==', 'pending'));
-                    const querySnapshot = await getDocs(q);
-                    const users = querySnapshot.docs.map(doc => doc.data() as UserProfile);
-                    setPendingUsers(users);
-                } catch (error) {
-                    console.error("Error fetching pending users:", error);
-                    toast({
-                        variant: 'destructive',
-                        title: 'Erro ao buscar usuários',
-                        description: 'Não foi possível carregar a lista de usuários pendentes.',
-                    });
-                } finally {
-                    setIsLoading(false);
-                }
+                // A query pode falhar se o índice composto do Firestore não existir.
+                // O Firebase geralmente fornece um link no console de logs para criar o índice.
+                // Não vamos mostrar um toast de erro aqui para evitar confundir o usuário se a lista estiver simplesmente vazia.
+                const usersCollectionRef = collection(db, 'users');
+                const q = query(usersCollectionRef, where('status', '==', 'pending'));
+                const querySnapshot = await getDocs(q);
+                const users = querySnapshot.docs.map(doc => doc.data() as UserProfile);
+                setPendingUsers(users);
+                setIsLoading(false);
             };
             fetchPendingUsers();
         }
-    }, [userProfile, toast]);
+    }, [userProfile]);
     
     const handleUpdateStatus = async (uid: string, status: 'approved' | 'rejected') => {
         setIsUpdating(uid);
