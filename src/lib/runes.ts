@@ -145,7 +145,31 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
     { name: 'Fragmento de Destruição (Amarelo)', count: 7 },
     { name: 'Fragmento de Batalha Feroz (Amarelo)', count: 7 },
   ],
-  8: [],
+  8: [
+    { name: 'Visão Aprimorada (Vermelho)', count: 7 },
+    { name: 'Mundo de Gelo (Vermelho)', count: 7 },
+    { name: 'Sussurro Maligno (Roxo)', count: 7 },
+    { name: 'Aprimoramento da Imagem Espelhada (Roxo)', count: 7 },
+    { name: 'Ressurreição do Veneno (Roxo)', count: 7 },
+    { name: 'Armadura de Veneno (Roxo)', count: 7 },
+    { name: 'Aprimoramento de Habilidade (Roxo)', count: 7 },
+    { name: 'Frio Cortante (Roxo)', count: 7 },
+    { name: 'Ressurreição do Gelo (Roxo)', count: 7 },
+    { name: 'Armadura de Gelo (Roxo)', count: 7 },
+    { name: 'Sussurro Maligno (Verde)', count: 7 },
+    { name: 'Aprimoramento da Imagem Espelhada (Verde)', count: 7 },
+    { name: 'Ressurreição do Veneno (Verde)', count: 7 },
+    { name: 'Armadura de Veneno (Verde)', count: 7 },
+    { name: 'Aprimoramento de Habilidade (Verde)', count: 7 },
+    { name: 'Frio Cortante (Verde)', count: 7 },
+    { name: 'Ressurreição do Gelo (Verde)', count: 7 },
+    { name: 'Armadura de Gelo (Verde)', count: 7 },
+    { name: 'Fragmento de Corpo Sagrado (Amarelo)', count: 7 },
+    { name: 'Fragmento de Ferida Divina (Amarelo)', count: 7 },
+    { name: 'Fragmento de Poder Antigo (Amarelo)', count: 7 },
+    { name: 'Fragmento de Separação de Alma (Amarelo)', count: 7 },
+    { name: 'Fragmento de Carnificina (Amarelo)', count: 7 },
+  ],
   9: [],
 };
 
@@ -156,7 +180,8 @@ export const ALL_RUNE_FRAGMENTS = [
     ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name),
     ...IDEAL_RUNES_BY_TIER[5].map(rune => rune.name),
     ...IDEAL_RUNES_BY_TIER[6].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[7].map(rune => rune.name)
+    ...IDEAL_RUNES_BY_TIER[7].map(rune => rune.name),
+    ...IDEAL_RUNES_BY_TIER[8].map(rune => rune.name)
 ];
 
     
