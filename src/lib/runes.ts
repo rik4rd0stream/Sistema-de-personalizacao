@@ -75,7 +75,29 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
     { name: 'Fragmento de Pulso (Amarelo)', count: 7 },
     { name: 'Fragmento de Reparação (Amarelo)', count: 7 },
   ],
-  5: [],
+  5: [
+    { name: 'Fragmento de Prazer Perverso (Roxo)', count: 7 },
+    { name: 'Fragmento de Gelo (Roxo)', count: 7 },
+    { name: 'Fragmento de Imagem Espelhada (Roxo)', count: 7 },
+    { name: 'Fragmento da Miragem (Roxo)', count: 7 },
+    { name: 'Fragmento Elemental II (Roxo)', count: 7 },
+    { name: 'Sequelas do Veneno (Roxo)', count: 7 },
+    { name: 'Fragmento do Espinho de Gelo (Roxo)', count: 7 },
+    { name: 'Fragmento do Campo de Neve (Roxo)', count: 7 },
+    { name: 'Fragmento do Inverno Elemental (Roxo)', count: 7 },
+    { name: 'Fragmento de Imagem Espelhada (Verde)', count: 7 },
+    { name: 'Fragmento da Miragem (Verde)', count: 7 },
+    { name: 'Fragmento Elemental II (Verde)', count: 7 },
+    { name: 'Sequelas do Veneno (Verde)', count: 7 },
+    { name: 'Fragmento do Espinho de Gelo (Verde)', count: 7 },
+    { name: 'Fragmento do Campo de Neve (Verde)', count: 7 },
+    { name: 'Fragmento do Inverno Elemental (Verde)', count: 7 },
+    { name: 'Fragmento de Escudo Flexível (Amarelo)', count: 7 },
+    { name: 'Fragmento de Armadura Flexível (Amarelo)', count: 7 },
+    { name: 'Fragmento de Escudo Firme (Amarelo)', count: 7 },
+    { name: 'Fragmento de Peixe de Ferro (Amarelo)', count: 7 },
+    { name: 'Fragmento Base (Amarelo)', count: 7 },
+  ],
   6: [],
   7: [],
   8: [],
@@ -86,5 +108,6 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
 export const ALL_RUNE_FRAGMENTS = [
     ...IDEAL_RUNES_BY_TIER[2].map(rune => rune.name),
     ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name)
+    ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name),
+    ...IDEAL_RUNES_BY_TIER[5].map(rune => rune.name)
 ];
