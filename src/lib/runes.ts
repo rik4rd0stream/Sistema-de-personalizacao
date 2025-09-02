@@ -52,7 +52,29 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
     { name: 'Fragmento de Golpe Crucial (Amarelo)', count: 7 },
     { name: 'Fragmento de Justiça (Amarelo)', count: 7 },
   ],
-  4: [],
+  4: [
+    { name: 'Fragmento do Mensageiro (Vermelho)', count: 7 },
+    { name: 'Fragmento de Separação (Vermelho)', count: 7 },
+    { name: 'Fragmento de Imagem Espelhada (Roxo)', count: 7 },
+    { name: 'Fragmento de Juramento (Roxo)', count: 7 },
+    { name: 'Fragmento de Rastro de Veneno (Roxo)', count: 7 },
+    { name: 'Fragmento de Elemento (Roxo)', count: 7 },
+    { name: 'Fragmento do Penhasco de Gelo (Roxo)', count: 7 },
+    { name: 'Território do Ceifador (Roxo)', count: 7 },
+    { name: 'Fragmento de Congelamento (Roxo)', count: 7 },
+    { name: 'Fragmento de Imagem Espelhada (Verde)', count: 7 },
+    { name: 'Fragmento de Juramento (Verde)', count: 7 },
+    { name: 'Fragmento de Rastro de Veneno (Verde)', count: 7 },
+    { name: 'Fragmento de Elemento (Verde)', count: 7 },
+    { name: 'Fragmento do Penhasco de Gelo (Verde)', count: 7 },
+    { name: 'Território do Ceifador (Verde)', count: 7 },
+    { name: 'Fragmento de Congelamento (Verde)', count: 7 },
+    { name: 'Fragmento de Placa (Amarelo)', count: 7 },
+    { name: 'Fragmento de Integridade (Amarelo)', count: 7 },
+    { name: 'Fragmento de Incursão (Amarelo)', count: 7 },
+    { name: 'Fragmento de Pulso (Amarelo)', count: 7 },
+    { name: 'Fragmento de Reparação (Amarelo)', count: 7 },
+  ],
   5: [],
   6: [],
   7: [],
@@ -63,5 +85,6 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
 // Lista de todas as runas para usar nos seletores
 export const ALL_RUNE_FRAGMENTS = [
     ...IDEAL_RUNES_BY_TIER[2].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name)
+    ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name),
+    ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name)
 ];
