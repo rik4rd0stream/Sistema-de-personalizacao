@@ -19,10 +19,9 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 interface RuneSuggestionDialogProps {
   equipmentType: string;
   tier: number;
-  onApplySuggestions: (suggestions: string[]) => void;
 }
 
-export function RuneSuggestionDialog({ equipmentType, tier, onApplySuggestions }: RuneSuggestionDialogProps) {
+export function RuneSuggestionDialog({ equipmentType, tier }: RuneSuggestionDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -51,11 +50,6 @@ export function RuneSuggestionDialog({ equipmentType, tier, onApplySuggestions }
     } finally {
       setIsLoading(false);
     }
-  };
-  
-  const handleApply = () => {
-    onApplySuggestions(suggestions);
-    setOpen(false);
   };
   
   const handleOpenChange = (isOpen: boolean) => {
@@ -115,9 +109,6 @@ export function RuneSuggestionDialog({ equipmentType, tier, onApplySuggestions }
           <DialogClose asChild>
              <Button variant="outline">Fechar</Button>
           </DialogClose>
-          {suggestions.length > 0 && !isLoading && (
-            <Button onClick={handleApply}>Aplicar Sugestões</Button>
-          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

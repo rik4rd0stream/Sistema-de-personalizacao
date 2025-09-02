@@ -7,13 +7,13 @@ import { Label } from '@/components/ui/label';
 import { EQUIPMENT_TYPES } from '@/lib/constants';
 import type { EquipmentType } from '@/lib/constants';
 import { EquipmentCard } from '@/components/equipment-card';
+import { IDEAL_RUNES_BY_TIER } from '@/lib/runes';
 
 export interface Equipment {
   id: string;
   name: string;
   icon: EquipmentType['icon'];
   currentRunes: string[];
-  idealRunes: string[];
 }
 
 function getInitialEquipmentState(tier: number): Equipment[] {
@@ -21,7 +21,6 @@ function getInitialEquipmentState(tier: number): Equipment[] {
   return EQUIPMENT_TYPES.map(eq => ({
     ...eq,
     currentRunes: Array(runeSlots).fill(''),
-    idealRunes: Array(runeSlots).fill(''),
   }));
 }
 
@@ -29,31 +28,24 @@ export default function Home() {
   const [tier, setTier] = useState<number>(9);
   const [equipments, setEquipments] = useState<Equipment[]>(() => getInitialEquipmentState(tier));
 
+  const idealRunesForTier = useMemo(() => IDEAL_RUNES_BY_TIER[tier] || [], [tier]);
+  
+  const allCurrentRunes = useMemo(() => {
+    return equipments.flatMap(eq => eq.currentRunes.map(r => r.trim().toLowerCase()).filter(r => r));
+  }, [equipments]);
+  
   const handleTierChange = (newTierValue: string) => {
     const newTier = parseInt(newTierValue, 10);
     setTier(newTier);
     setEquipments(getInitialEquipmentState(newTier));
   };
   
-  const handleRuneChange = useCallback((equipmentId: string, runeType: 'currentRunes' | 'idealRunes', runeIndex: number, value: string) => {
+  const handleRuneChange = useCallback((equipmentId: string, runeIndex: number, value: string) => {
     setEquipments(prev => prev.map(eq => 
       eq.id === equipmentId 
-        ? { ...eq, [runeType]: eq[runeType].map((rune, index) => index === runeIndex ? value : rune) }
+        ? { ...eq, currentRunes: eq.currentRunes.map((rune, index) => index === runeIndex ? value : rune) }
         : eq
     ));
-  }, []);
-
-  const handleApplySuggestions = useCallback((equipmentId: string, suggestions: string[]) => {
-    setEquipments(prev => prev.map(eq => {
-      if (eq.id === equipmentId) {
-        const newIdealRunes = [...eq.idealRunes];
-        for (let i = 0; i < Math.min(suggestions.length, newIdealRunes.length); i++) {
-          newIdealRunes[i] = suggestions[i];
-        }
-        return { ...eq, idealRunes: newIdealRunes };
-      }
-      return eq;
-    }));
   }, []);
   
   const runeSlots = useMemo(() => (tier === 2 ? 2 : 3), [tier]);
@@ -85,8 +77,9 @@ export default function Home() {
               equipment={equipment}
               tier={tier}
               onRuneChange={handleRuneChange}
-              onApplySuggestions={handleApplySuggestions}
               runeSlots={runeSlots}
+              idealRunesForTier={idealRunesForTier}
+              allCurrentRunes={allCurrentRunes}
             />
           ))}
         </div>

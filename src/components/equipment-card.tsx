@@ -4,18 +4,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, XCircle } from 'lucide-react';
 import type { Equipment } from '@/app/page';
-import { RuneSuggestionDialog } from './rune-suggestion-dialog';
+import type { IdealRune } from '@/lib/runes';
 
 interface EquipmentCardProps {
   equipment: Equipment;
   tier: number;
   runeSlots: number;
-  onRuneChange: (equipmentId: string, runeType: 'currentRunes' | 'idealRunes', runeIndex: number, value: string) => void;
-  onApplySuggestions: (equipmentId: string, suggestions: string[]) => void;
+  onRuneChange: (equipmentId: string, runeIndex: number, value: string) => void;
+  idealRunesForTier: IdealRune[];
+  allCurrentRunes: string[];
 }
 
-export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, onApplySuggestions }: EquipmentCardProps) {
+export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealRunesForTier, allCurrentRunes }: EquipmentCardProps) {
   const Icon = equipment.icon;
+
+  const isRuneCorrect = (currentRune: string) => {
+    if (!currentRune || idealRunesForTier.length === 0) return false;
+    
+    const lowerCaseRune = currentRune.trim().toLowerCase();
+    const idealRuneInfo = idealRunesForTier.find(r => r.name.toLowerCase() === lowerCaseRune);
+
+    if (!idealRuneInfo) return false;
+
+    const count = allCurrentRunes.filter(r => r === lowerCaseRune).length;
+    return count <= idealRuneInfo.count;
+  };
 
   return (
     <Card>
@@ -34,20 +47,19 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, onAppl
           <div className="grid gap-3">
             {Array.from({ length: runeSlots }).map((_, index) => {
                const currentRune = equipment.currentRunes[index];
-               const idealRune = equipment.idealRunes[index];
-               const isCorrect = currentRune && idealRune && currentRune.trim().toLowerCase() === idealRune.trim().toLowerCase();
                const isFilled = currentRune && currentRune.trim() !== '';
+               const isCorrect = isFilled && isRuneCorrect(currentRune);
 
               return (
                 <div key={`current-${index}`} className="flex items-center gap-2">
                   <Input
                     value={currentRune}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => onRuneChange(equipment.id, 'currentRunes', index, e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => onRuneChange(equipment.id, index, e.target.value)}
                     placeholder={`Runa ${index + 1}`}
                     className="flex-1"
                   />
                   <div className="w-5 h-5 flex items-center justify-center">
-                    {isFilled && idealRune && idealRune.trim() !== '' && (
+                    {isFilled && idealRunesForTier.length > 0 && (
                         isCorrect ? (
                             <CheckCircle2 className="text-accent" />
                         ) : (
@@ -58,27 +70,6 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, onAppl
                 </div>
               )
             })}
-          </div>
-        </div>
-        
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-foreground/80">Runas Ideais</h3>
-            <RuneSuggestionDialog 
-              equipmentType={equipment.name} 
-              tier={tier} 
-              onApplySuggestions={(suggestions) => onApplySuggestions(equipment.id, suggestions)} 
-            />
-          </div>
-          <div className="grid gap-3">
-            {Array.from({ length: runeSlots }).map((_, index) => (
-              <Input
-                key={`ideal-${index}`}
-                value={equipment.idealRunes[index]}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => onRuneChange(equipment.id, 'idealRunes', index, e.target.value)}
-                placeholder={`Runa Ideal ${index + 1}`}
-              />
-            ))}
           </div>
         </div>
       </CardContent>
