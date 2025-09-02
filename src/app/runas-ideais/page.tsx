@@ -30,7 +30,7 @@ export interface IdealRune {
 }
 
 export default function UserRunesPage() {
-    const { user, userProfile, loading: authLoading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
 
@@ -41,38 +41,42 @@ export default function UserRunesPage() {
     
     const [editingRune, setEditingRune] = useState<IdealRune | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    
-    const fetchIdealRunes = useCallback(async (selectedTier: number) => {
-        if (!user) return;
-        setIsLoading(true);
-        try {
-            const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${selectedTier}`);
-            const docSnap = await getDoc(runesDocRef);
-            if (docSnap.exists()) {
-                setIdealRunes(docSnap.data().runes as IdealRune[]);
-            } else {
-                setIdealRunes([]);
-            }
-        } catch (error) {
-            console.error("Error fetching ideal runes:", error);
-            toast({ variant: 'destructive', title: 'Erro ao buscar runas', description: 'Não foi possível carregar a lista de runas ideais.' });
-        } finally {
-            setIsLoading(false);
-        }
-    }, [toast, user]);
 
     useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
-        } else if (user) {
-             fetchIdealRunes(tier);
         }
-    }, [user, userProfile, authLoading, router, fetchIdealRunes, tier]);
+    }, [user, authLoading, router]);
+    
+    useEffect(() => {
+        const fetchIdealRunes = async () => {
+            if (!user) return;
+            setIsLoading(true);
+            try {
+                const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
+                const docSnap = await getDoc(runesDocRef);
+                if (docSnap.exists()) {
+                    setIdealRunes(docSnap.data().runes as IdealRune[]);
+                } else {
+                    setIdealRunes([]);
+                }
+            } catch (error) {
+                console.error("Error fetching ideal runes:", error);
+                toast({ variant: 'destructive', title: 'Erro ao buscar runas', description: 'Não foi possível carregar a lista de runas ideais.' });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        
+        if (user) {
+            fetchIdealRunes();
+        }
+    }, [user, tier, toast]);
+
 
     const handleTierChange = (newTierValue: string) => {
         const newTier = parseInt(newTierValue, 10);
         setTier(newTier);
-        fetchIdealRunes(newTier);
     };
 
     const handleAddRune = async (e: React.FormEvent<HTMLFormElement>) => {
