@@ -36,15 +36,21 @@ export default function AdminPage() {
         if (userProfile?.role === 'admin') {
             const fetchPendingUsers = async () => {
                 setIsLoading(true);
-                // A query pode falhar se o índice composto do Firestore não existir.
-                // O Firebase geralmente fornece um link no console de logs para criar o índice.
-                // Não vamos mostrar um toast de erro aqui para evitar confundir o usuário se a lista estiver simplesmente vazia.
-                const usersCollectionRef = collection(db, 'users');
-                const q = query(usersCollectionRef, where('status', '==', 'pending'));
-                const querySnapshot = await getDocs(q);
-                const users = querySnapshot.docs.map(doc => doc.data() as UserProfile);
-                setPendingUsers(users);
-                setIsLoading(false);
+                try {
+                    // A query pode falhar se o índice composto do Firestore não existir.
+                    // O Firebase geralmente fornece um link no console de logs para criar o índice.
+                    const usersCollectionRef = collection(db, 'users');
+                    const q = query(usersCollectionRef, where('status', '==', 'pending'));
+                    const querySnapshot = await getDocs(q);
+                    const users = querySnapshot.docs.map(doc => doc.data() as UserProfile);
+                    setPendingUsers(users);
+                } catch (error) {
+                    console.error("Error fetching pending users. Firestore index might be missing.", error);
+                    // Não mostraremos um toast de erro aqui para evitar confundir o usuário.
+                    // A página simplesmente mostrará que não há usuários pendentes.
+                } finally {
+                    setIsLoading(false);
+                }
             };
             fetchPendingUsers();
         }
