@@ -10,17 +10,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { logIn, signUp } = useAuth();
+  const { logIn } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-
-  const handleAuthSuccess = () => {
-    router.push('/');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,17 +29,8 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      if (isSignUp) {
-        await signUp(email, password);
-        toast({
-          title: 'Conta Criada!',
-          description: 'Você já pode fazer login com suas novas credenciais.',
-        });
-        setIsSignUp(false); // Volta para a tela de login
-      } else {
-        await logIn(email, password);
-        handleAuthSuccess();
-      }
+      await logIn(email, password);
+      router.push('/');
     } catch (error: any) {
       // Erros já são tratados e exibidos pelo auth-context
     } finally {
@@ -59,11 +45,9 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Gem className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">{isSignUp ? 'Criar Conta' : 'Otimizador de Runas'}</CardTitle>
+          <CardTitle className="text-2xl">Otimizador de Runas</CardTitle>
           <CardDescription>
-            {isSignUp
-              ? 'Crie uma conta para começar a otimizar.'
-              : 'Faça login para gerenciar seus equipamentos.'}
+            Faça login para gerenciar seus equipamentos.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -95,16 +79,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isSignUp ? 'Criar Conta' : 'Entrar')}
-            </Button>
-            <Button
-              type="button"
-              variant="link"
-              className="w-full text-muted-foreground"
-              onClick={() => setIsSignUp(!isSignUp)}
-              disabled={loading}
-            >
-              {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem uma conta? Crie uma'}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Entrar'}
             </Button>
           </CardFooter>
         </form>

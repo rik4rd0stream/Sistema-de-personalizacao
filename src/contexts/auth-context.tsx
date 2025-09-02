@@ -12,18 +12,10 @@ import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
-// --- INSTRUÇÃO IMPORTANTE ---
-// Adicione aqui os e-mails dos usuários que terão permissão para CRIAR UMA CONTA.
-// Somente os e-mails nesta lista poderão se cadastrar.
-const ALLOWED_EMAILS = [
-  'rik4rd0stream@gmail.com' 
-];
-
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   logIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -42,35 +34,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     return () => unsubscribe();
   }, []);
-
-  const signUp = async (email: string, password: string) => {
-    if (!ALLOWED_EMAILS.includes(email)) {
-      toast({
-        variant: "destructive",
-        title: "Cadastro não permitido",
-        description: "Este e-mail não tem permissão para se cadastrar.",
-      });
-      throw new Error("Unauthorized email for signup");
-    }
-
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-    } catch (error: any) {
-      let title = "Erro ao Criar Conta";
-      let description = "Ocorreu um problema durante o cadastro. Tente novamente.";
-
-      if (error.code === 'auth/email-already-in-use') {
-        title = "E-mail já cadastrado";
-        description = "Este e-mail já está sendo utilizado. Tente fazer login.";
-      } else if (error.code === 'auth/weak-password') {
-        title = "Senha Fraca";
-        description = "A senha deve ter pelo menos 6 caracteres.";
-      }
-      
-      toast({ variant: "destructive", title, description });
-      throw error;
-    }
-  };
 
   const logIn = async (email: string, password: string) => {
     try {
@@ -98,7 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     loading,
     logIn,
-    signUp,
     logOut,
   };
 
