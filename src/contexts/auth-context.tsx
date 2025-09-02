@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUser(null);
         setUserProfile(null);
-        const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao', '/personagem', '/runas-ideais'];
+        const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao', '/personagem'];
         const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
         if (isProtected) {
           router.push('/login');

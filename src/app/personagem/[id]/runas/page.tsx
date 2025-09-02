@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { EQUIPMENT_TYPES, ALL_RUNE_FRAGMENTS } from '@/lib/constants';
 import type { EquipmentType } from '@/lib/constants';
 import { EquipmentCard } from '@/components/equipment-card';
-import { IdealRunesSummary, type IdealRune } from '@/components/ideal-runes-summary';
+import { CurrentRunesSummary } from '@/components/current-runes-summary';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2, ArrowLeft } from 'lucide-react';
@@ -53,9 +53,7 @@ export default function CharacterRunesPage() {
   const [tier, setTier] = useState<number>(2);
   const [equipments, setEquipments] = useState<Equipment[]>(() => getInitialEquipmentState(2));
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingRunes, setIsLoadingRunes] = useState(true);
   const [editingRuneSlot, setEditingRuneSlot] = useState<RuneSlotIdentifier | null>(null);
-  const [idealRunesForTier, setIdealRunesForTier] = useState<IdealRune[]>([]);
 
   const openRuneSlotDialog = (identifier: RuneSlotIdentifier) => {
     setEditingRuneSlot(identifier);
@@ -124,31 +122,6 @@ export default function CharacterRunesPage() {
       fetchCharacterData();
     }
   }, [user, authLoading, fetchCharacterData]);
-
-  const fetchIdealRunes = useCallback(async (selectedTier: number, charClass: string) => {
-      if (!user || !charClass) return;
-      setIsLoadingRunes(true);
-      try {
-          const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', charClass, `tier${selectedTier}`);
-          const docSnap = await getDoc(runesDocRef);
-          if (docSnap.exists()) {
-              setIdealRunesForTier(docSnap.data().runes as IdealRune[]);
-          } else {
-              setIdealRunesForTier([]);
-          }
-      } catch (error) {
-          console.error("Error fetching ideal runes:", error);
-          toast({ variant: 'destructive', title: 'Erro ao buscar runas', description: 'Não foi possível carregar a lista de runas ideais.' });
-      } finally {
-          setIsLoadingRunes(false);
-      }
-  }, [toast, user]);
-
-  useEffect(() => {
-    if(!isLoading && characterClass) {
-      fetchIdealRunes(tier, characterClass);
-    }
-  }, [tier, characterClass, fetchIdealRunes, isLoading]);
 
   
   const allCurrentFragments = useMemo(() => {
@@ -262,21 +235,16 @@ export default function CharacterRunesPage() {
                   key={equipment.id}
                   equipment={equipment}
                   tier={tier}
-                  onRuneChange={handleRuneChange}
-                  idealRunesForTier={idealRunesForTier}
-                  allCurrentRunes={allCurrentFragments}
                   openRuneSlotDialog={openRuneSlotDialog}
                 />
               ))}
           </Card>
 
           <div className="col-span-1">
-            <IdealRunesSummary
-              idealRunesForTier={idealRunesForTier}
+            <CurrentRunesSummary
               allCurrentRunes={allCurrentFragments}
               tier={tier}
               characterClass={characterClass}
-              isLoading={isLoadingRunes}
             />
           </div>
         </div>
