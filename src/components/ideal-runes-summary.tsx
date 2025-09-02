@@ -1,11 +1,10 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { IdealRune } from '@/lib/runes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from './ui/badge';
-import { Progress } from './ui/progress';
+import { ScrollArea } from './ui/scroll-area';
+import { Gem } from 'lucide-react';
 
 interface IdealRunesSummaryProps {
   idealRunesForTier: IdealRune[];
@@ -14,8 +13,6 @@ interface IdealRunesSummaryProps {
 }
 
 export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier }: IdealRunesSummaryProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
   const missingRunes = useMemo(() => {
     if (idealRunesForTier.length === 0) return [];
 
@@ -26,7 +23,6 @@ export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier }: 
       const total = idealRune.count;
       return { ...idealRune, currentCount, missingCount, total };
     }).sort((a, b) => {
-      // Sort by missing count descending, then by name
       if (b.missingCount !== a.missingCount) {
         return b.missingCount - a.missingCount;
       }
@@ -36,50 +32,47 @@ export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier }: 
 
   const totalRunesCount = useMemo(() => missingRunes.reduce((sum, r) => sum + r.total, 0), [missingRunes]);
   const currentRunesCount = useMemo(() => missingRunes.reduce((sum, r) => sum + r.currentCount, 0), [missingRunes]);
-  const overallProgress = totalRunesCount > 0 ? (currentRunesCount / totalRunesCount) * 100 : 0;
 
-  if (idealRunesForTier.length === 0) {
+  const renderContent = () => {
+    if (idealRunesForTier.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8">
+            <Gem className="h-12 w-12 mb-4" />
+            <p>Nenhuma runa ideal cadastrada para o Tier {tier}.</p>
+        </div>
+      );
+    }
+    
     return (
-       <Card>
-        <CardHeader>
-          <CardTitle>Resumo de Runas Ideais para o Tier {tier}</CardTitle>
-          <CardDescription>Nenhuma runa ideal cadastrada para este tier.</CardDescription>
-        </CardHeader>
-      </Card>
-    );
+        <ScrollArea className="h-[calc(100vh-220px)]">
+            <div className="grid grid-cols-2 gap-3 p-1">
+                {missingRunes.map(rune => (
+                <div key={rune.name} className="flex flex-col items-center justify-center rounded-lg border bg-background/50 p-4 shadow-sm text-center">
+                    <span className="text-xs font-medium text-foreground/80 leading-tight">{rune.name}</span>
+                    <Badge variant={rune.missingCount === 0 ? 'default' : 'destructive'} className="mt-3 text-lg">
+                    {rune.currentCount}/{rune.total}
+                    </Badge>
+                </div>
+                ))}
+            </div>
+      </ScrollArea>
+    )
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-        <div>
-          <CardTitle>Resumo de Runas Ideais para o Tier {tier}</CardTitle>
-          <CardDescription>Clique para expandir e ver as runas que faltam.</CardDescription>
-        </div>
-        <div className="flex items-center gap-4">
-            <div className='w-40'>
-                <Progress value={overallProgress} className='h-3'/>
-            </div>
-            <Badge variant="secondary">{`${currentRunesCount} / ${totalRunesCount}`}</Badge>
-            <Button variant="ghost" size="icon">
-                {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-            </Button>
+    <Card className="sticky top-24 bg-secondary/30 border-secondary">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Runas Ideais</CardTitle>
+            <CardDescription>Faltam {totalRunesCount - currentRunesCount} de {totalRunesCount} runas</CardDescription>
+          </div>
+          <Badge variant="secondary" className="text-base">Tier {tier}</Badge>
         </div>
       </CardHeader>
-      {isOpen && (
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {missingRunes.map(rune => (
-              <div key={rune.name} className="flex items-center justify-between rounded-lg border bg-card p-3 shadow-sm">
-                <span className="text-sm font-medium text-card-foreground">{rune.name}</span>
-                <Badge variant={rune.missingCount === 0 ? 'default' : 'destructive'} className="text-sm">
-                  {rune.currentCount}/{rune.total}
-                </Badge>
-              </div>
-            ))}
-          </div>
+            {renderContent()}
         </CardContent>
-      )}
     </Card>
   );
 }

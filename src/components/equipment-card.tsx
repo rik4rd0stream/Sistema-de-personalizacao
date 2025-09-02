@@ -32,32 +32,25 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealR
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <Icon className="h-8 w-8 text-accent" />
-          <div>
-            <CardTitle>{equipment.name}</CardTitle>
-            <CardDescription>Tier {tier}</CardDescription>
-          </div>
-          <div className="ml-auto">
+    <div className="flex items-center gap-4 rounded-lg border bg-background/50 p-3 transition-all hover:bg-background/80">
+      <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10">
+        <Icon className="h-7 w-7 text-primary" />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center justify-between">
+            <h3 className="font-semibold">{equipment.name}</h3>
             <RuneSuggestionDialog equipmentType={equipment.name} tier={tier} />
-          </div>
         </div>
-      </CardHeader>
-      <CardContent className="grid gap-6">
-        <div>
-          <h3 className="mb-2 font-semibold text-foreground/80">Runas Atuais</h3>
-          <div className="grid gap-3">
+        <div className="mt-2 flex items-center gap-2">
             {Array.from({ length: runeSlots }).map((_, index) => {
                const currentRune = equipment.currentRunes[index];
                const isFilled = currentRune && currentRune.trim() !== '';
                const isCorrect = isFilled && isRuneCorrect(currentRune);
 
               return (
-                <div key={`current-${index}`} className="flex items-center gap-2">
+                <div key={`current-${index}`} className="flex flex-1 items-center gap-2">
                   <Select value={currentRune || 'EMPTY_SLOT'} onValueChange={(value) => onRuneChange(equipment.id, index, value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder={`Runa ${index + 1}`} />
                     </SelectTrigger>
                     <SelectContent>
@@ -68,8 +61,7 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealR
                       ))}
                     </SelectContent>
                   </Select>
-
-                  <div className="w-5 h-5 flex items-center justify-center">
+                   <div className="w-5 h-5 flex items-center justify-center">
                     {isFilled && idealRunesForTier.length > 0 && (
                         isCorrect ? (
                             <CheckCircle2 className="text-green-500" />
@@ -81,9 +73,8 @@ export function EquipmentCard({ equipment, tier, runeSlots, onRuneChange, idealR
                 </div>
               )
             })}
-          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

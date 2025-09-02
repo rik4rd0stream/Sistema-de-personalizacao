@@ -9,6 +9,7 @@ import type { EquipmentType } from '@/lib/constants';
 import { EquipmentCard } from '@/components/equipment-card';
 import { IDEAL_RUNES_BY_TIER } from '@/lib/runes';
 import { IdealRunesSummary } from '@/components/ideal-runes-summary';
+import { Card } from '@/components/ui/card';
 
 export interface Equipment {
   id: string;
@@ -61,9 +62,9 @@ export default function Home() {
       <Header />
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold tracking-tight">Painel de Equipamentos</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-primary">Painel de Equipamentos</h1>
           <div className="ml-auto w-full max-w-[180px]">
-            <Label htmlFor="tier-select" className="mb-2 block">Tier do Set</Label>
+            <Label htmlFor="tier-select" className="mb-2 block text-muted-foreground">Tier do Set</Label>
             <Select value={String(tier)} onValueChange={handleTierChange}>
               <SelectTrigger id="tier-select">
                 <SelectValue placeholder="Selecione o Tier" />
@@ -77,25 +78,29 @@ export default function Home() {
           </div>
         </div>
 
-        <IdealRunesSummary
-          idealRunesForTier={idealRunesForTier}
-          allCurrentRunes={allCurrentRunes}
-          tier={tier}
-        />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <Card className="col-span-1 space-y-4 p-4 lg:col-span-2 bg-secondary/30 border-secondary">
+              {equipments.map(equipment => (
+                <EquipmentCard
+                  key={equipment.id}
+                  equipment={equipment}
+                  tier={tier}
+                  onRuneChange={handleRuneChange}
+                  runeSlots={runeSlots}
+                  idealRunesForTier={idealRunesForTier}
+                  allCurrentRunes={allCurrentRunes}
+                  availableRunes={availableRunesForTier}
+                />
+              ))}
+          </Card>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {equipments.map(equipment => (
-            <EquipmentCard
-              key={equipment.id}
-              equipment={equipment}
-              tier={tier}
-              onRuneChange={handleRuneChange}
-              runeSlots={runeSlots}
+          <div className="col-span-1">
+            <IdealRunesSummary
               idealRunesForTier={idealRunesForTier}
               allCurrentRunes={allCurrentRunes}
-              availableRunes={availableRunesForTier}
+              tier={tier}
             />
-          ))}
+          </div>
         </div>
       </main>
     </div>
