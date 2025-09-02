@@ -90,7 +90,13 @@ export default function CharacterRunesPage() {
                   const runesData = savedRunes.data();
                   initialTier = runesData.tier || 2;
                   setTier(initialTier);
-                  setEquipments(runesData.equipments || getInitialEquipmentState(initialTier));
+                  // Re-hydrate equipment with icons
+                  const savedEquipments = runesData.equipments || [];
+                  const hydratedEquipments = EQUIPMENT_TYPES.map(eqType => {
+                      const savedEq = savedEquipments.find((s: Equipment) => s.id === eqType.id);
+                      return savedEq ? { ...eqType, fragments: savedEq.fragments } : getInitialEquipmentState(initialTier).find(i => i.id === eqType.id)!;
+                  });
+                  setEquipments(hydratedEquipments);
                 } else {
                   setTier(2);
                   setEquipments(getInitialEquipmentState(2));
@@ -139,7 +145,12 @@ export default function CharacterRunesPage() {
             const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
             const savedRunes = await getDoc(savedRunesDocRef);
             if (savedRunes.exists() && savedRunes.data().tier === newTier) {
-                setEquipments(savedRunes.data().equipments);
+                const savedEquipments = savedRunes.data().equipments;
+                const hydratedEquipments = EQUIPMENT_TYPES.map(eqType => {
+                    const savedEq = savedEquipments.find((s: Equipment) => s.id === eqType.id);
+                    return savedEq ? { ...eqType, fragments: savedEq.fragments } : getInitialEquipmentState(newTier).find(i => i.id === eqType.id)!;
+                });
+                setEquipments(hydratedEquipments);
             } else {
                 // If no config for the new tier, or no config at all, reset.
                 setEquipments(getInitialEquipmentState(newTier));
@@ -166,11 +177,14 @@ export default function CharacterRunesPage() {
   const handleSave = useCallback(async () => {
     if (!user || !characterId) return;
 
+    // Create a deep copy of equipments and remove non-serializable 'icon' property
+    const equipmentsToSave = equipments.map(({ icon, ...rest }) => rest);
+
     try {
       const runesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
       await setDoc(runesDocRef, {
         tier,
-        equipments
+        equipments: equipmentsToSave
       }, { merge: true });
       toast({ title: 'Progresso Salvo!', description: 'Suas runas foram salvas com sucesso.' });
     } catch (error) {
