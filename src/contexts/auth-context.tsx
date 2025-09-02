@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 // Adicione aqui os e-mails dos usuários que terão permissão para CRIAR UMA CONTA.
 // Somente os e-mails nesta lista poderão se cadastrar.
 const ALLOWED_EMAILS = [
-  'seu-email-aqui@gmail.com' 
+  'rik4rd0stream@gmail.com' 
 ];
 
 interface AuthContextType {
