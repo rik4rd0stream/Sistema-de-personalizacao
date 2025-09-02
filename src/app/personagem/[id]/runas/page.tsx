@@ -71,55 +71,57 @@ export default function CharacterRunesPage() {
     }
   }, [user, authLoading, router]);
 
-  useEffect(() => {
-    const fetchCharacterData = async () => {
-        if (user && characterId) {
-            try {
-                const charDocRef = doc(db, 'users', user.uid, 'characters', characterId);
-                const charDoc = await getDoc(charDocRef);
+  const fetchCharacterData = useCallback(async () => {
+    if (user && characterId) {
+        try {
+            const charDocRef = doc(db, 'users', user.uid, 'characters', characterId);
+            const charDoc = await getDoc(charDocRef);
 
-                if (charDoc.exists()) {
-                    const data = charDoc.data();
-                    setCharacterName(data.name);
-                    
-                    const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
-                    const savedRunes = await getDoc(savedRunesDocRef);
+            if (charDoc.exists()) {
+                const data = charDoc.data();
+                setCharacterName(data.name);
+                
+                const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
+                const savedRunes = await getDoc(savedRunesDocRef);
 
-                    if (savedRunes.exists()) {
-                      const runesData = savedRunes.data();
-                      setTier(runesData.tier);
-                      // Ensure equipment state is consistent with loaded tier
-                      setEquipments(runesData.equipments || getInitialEquipmentState(runesData.tier));
-                    } else {
-                      // If no saved data, initialize with default tier 2
-                      setTier(2);
-                      setEquipments(getInitialEquipmentState(2));
-                    }
+                if (savedRunes.exists()) {
+                  const runesData = savedRunes.data();
+                  const savedTier = runesData.tier;
+                  setTier(savedTier);
+                  // Ensure equipment state is consistent with loaded tier
+                  setEquipments(runesData.equipments || getInitialEquipmentState(savedTier));
                 } else {
-                    toast({
-                        variant: 'destructive',
-                        title: 'Acesso Negado',
-                        description: 'Personagem não encontrado ou você não tem permissão para acessá-lo.',
-                    });
-                    router.push('/personagens');
+                  // If no saved data, initialize with default tier 2
+                  setTier(2);
+                  setEquipments(getInitialEquipmentState(2));
                 }
-            } catch (error) {
-                console.error("Error fetching character data: ", error);
-                 toast({
+            } else {
+                toast({
                     variant: 'destructive',
-                    title: 'Erro ao carregar',
-                    description: 'Não foi possível carregar os dados do personagem.',
+                    title: 'Acesso Negado',
+                    description: 'Personagem não encontrado ou você não tem permissão para acessá-lo.',
                 });
                 router.push('/personagens');
-            } finally {
-                setIsLoading(false);
             }
+        } catch (error) {
+            console.error("Error fetching character data: ", error);
+             toast({
+                variant: 'destructive',
+                title: 'Erro ao carregar',
+                description: 'Não foi possível carregar os dados do personagem.',
+            });
+            router.push('/personagens');
+        } finally {
+            setIsLoading(false);
         }
-    };
+    }
+  }, [user, characterId, router, toast]);
+
+  useEffect(() => {
     if (!authLoading && user) {
       fetchCharacterData();
     }
-  }, [user, characterId, router, authLoading, toast]);
+  }, [user, authLoading, fetchCharacterData]);
 
   const fetchIdealRunes = useCallback(async (selectedTier: number) => {
       if (!user) return;
@@ -151,10 +153,25 @@ export default function CharacterRunesPage() {
     return equipments.flatMap(eq => eq.fragments.map(r => r.trim().toLowerCase()).filter(r => r));
   }, [equipments]);
   
-  const handleTierChange = (newTierValue: string) => {
+  const handleTierChange = async (newTierValue: string) => {
     const newTier = parseInt(newTierValue, 10);
     setTier(newTier);
-    setEquipments(getInitialEquipmentState(newTier));
+    
+    // After changing tier, refetch character data which will load saved equipment for that tier or reset
+    if (user && characterId) {
+        try {
+            const savedRunesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
+            const savedRunes = await getDoc(savedRunesDocRef);
+            if (savedRunes.exists() && savedRunes.data().tier === newTier) {
+                setEquipments(savedRunes.data().equipments);
+            } else {
+                setEquipments(getInitialEquipmentState(newTier));
+            }
+        } catch (error) {
+             console.error("Error fetching runes on tier change: ", error);
+             setEquipments(getInitialEquipmentState(newTier));
+        }
+    }
   };
   
   const handleRuneChange = useCallback((equipmentId: string, runeIndex: number, fragmentIndex: number, value: string) => {

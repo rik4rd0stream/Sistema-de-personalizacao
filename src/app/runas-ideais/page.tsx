@@ -101,7 +101,7 @@ export default function UserRunesPage() {
                 await setDoc(runesDocRef, { runes: [newRune] });
             }
             
-            setIdealRunes(prev => [...prev, newRune]);
+            setIdealRunes(prev => [...prev, newRune].sort((a,b) => a.name.localeCompare(b.name)));
             toast({ title: 'Runa adicionada com sucesso!' });
             form.reset();
         } catch (error) {
@@ -118,9 +118,17 @@ export default function UserRunesPage() {
         setIsSubmitting(true);
         try {
             const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
-            await updateDoc(runesDocRef, { runes: arrayRemove(runeToRemove) });
-            setIdealRunes(prev => prev.filter(r => r.name !== runeToRemove.name));
-            toast({ title: 'Runa removida com sucesso!' });
+            // Firestore does not deeply compare objects in arrays. We need to fetch the exact object.
+            const docSnap = await getDoc(runesDocRef);
+            if (docSnap.exists()) {
+                 const existingRunes = docSnap.data().runes as IdealRune[];
+                 const runeInDb = existingRunes.find(r => r.name === runeToRemove.name && r.count === runeToRemove.count);
+                if (runeInDb) {
+                     await updateDoc(runesDocRef, { runes: arrayRemove(runeInDb) });
+                     setIdealRunes(prev => prev.filter(r => r.name !== runeToRemove.name));
+                     toast({ title: 'Runa removida com sucesso!' });
+                }
+            }
         } catch (error) {
             console.error("Error removing rune:", error);
             toast({ variant: 'destructive', title: 'Erro ao remover runa' });
@@ -148,11 +156,12 @@ export default function UserRunesPage() {
         try {
             const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${tier}`);
             const batch = writeBatch(db);
+            // To update an object in an array, we must remove the old one and add the new one.
             batch.update(runesDocRef, { runes: arrayRemove(editingRune) });
             batch.update(runesDocRef, { runes: arrayUnion(updatedRune) });
             await batch.commit();
 
-            setIdealRunes(prev => prev.map(r => r.name === editingRune.name ? updatedRune : r));
+            setIdealRunes(prev => prev.map(r => r.name === editingRune.name ? updatedRune : r).sort((a,b) => a.name.localeCompare(b.name)));
             toast({ title: 'Runa atualizada com sucesso!' });
             setIsEditModalOpen(false);
             setEditingRune(null);
@@ -183,7 +192,7 @@ export default function UserRunesPage() {
                      <div className="mb-6 flex items-center gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight text-primary">Gerenciar Minhas Runas Ideais</h1>
-                            <p className="text-muted-foreground">Adicione, edite ou remova as runas ideais para cada tier.</p>
+                            <p className="text-muted-foreground">Adicione, edite ou remova os fragmentos ideais para cada tier.</p>
                         </div>
                          <div className="ml-auto w-full max-w-[180px]">
                             <Label htmlFor="tier-select" className="mb-2 block text-muted-foreground">Tier do Set</Label>
@@ -202,7 +211,7 @@ export default function UserRunesPage() {
 
                     <Card className="mb-8">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><PlusCircle/> Adicionar Nova Runa Ideal</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><PlusCircle/> Adicionar Novo Fragmento</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleAddRune} className="flex items-end gap-4">
@@ -223,14 +232,14 @@ export default function UserRunesPage() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Lista de Runas para o Tier {tier}</CardTitle>
+                            <CardTitle>Lista de Fragmentos para o Tier {tier}</CardTitle>
                         </CardHeader>
                         <CardContent>
                              {isLoading ? (
                                 <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
                              ) : idealRunes.length > 0 ? (
                                 <ul className="space-y-2">
-                                    {idealRunes.map(rune => (
+                                    {idealRunes.sort((a, b) => a.name.localeCompare(b.name)).map(rune => (
                                         <li key={rune.name} className="flex items-center justify-between rounded-md border p-3 bg-background">
                                             <div>
                                                 <p className="font-semibold">{rune.name}</p>
@@ -249,7 +258,7 @@ export default function UserRunesPage() {
                                 </ul>
                              ) : (
                                 <div className="flex items-center justify-center p-8 border-dashed border rounded-md">
-                                    <p className="text-muted-foreground">Nenhuma runa ideal cadastrada para este tier.</p>
+                                    <p className="text-muted-foreground">Nenhum fragmento ideal cadastrado para este tier.</p>
                                 </div>
                              )}
                         </CardContent>
