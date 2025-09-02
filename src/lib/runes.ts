@@ -27,7 +27,31 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
     { name: 'Fragmento Inabalável (Amarela)', count: 7 },
     { name: 'Fragmento de Ataque Poderoso (Amarela)', count: 7 },
   ],
-  3: [],
+  3: [
+    { name: 'Fragmento do Escudo de Veneno (Vermelho)', count: 7 },
+    { name: 'Fragmento do Espaço-Tempo (Vermelho)', count: 7 },
+    { name: 'Fragmento de Substituição (Roxo)', count: 7 },
+    { name: 'Fragmento da Chama Venenosa (Roxo)', count: 7 },
+    { name: 'Fragmento da Ilusão (Roxo)', count: 7 },
+    { name: 'Fragmento de Explosão Venenosa (Roxo)', count: 7 },
+    { name: 'Fragmento da Estrela Cadente (Roxo)', count: 7 },
+    { name: 'Fragmento da Perdição (Roxo)', count: 7 },
+    { name: 'Fragmento de Calor (Roxo)', count: 7 },
+    { name: 'Fragmento do Ceifador (Roxo)', count: 7 },
+    { name: 'Fragmento de Substituição (Verde)', count: 7 },
+    { name: 'Fragmento da Chama Venenosa (Verde)', count: 7 },
+    { name: 'Fragmento da Ilusão (Verde)', count: 7 },
+    { name: 'Fragmento de Explosão Venenosa (Verde)', count: 7 },
+    { name: 'Fragmento da Estrela Cadente (Verde)', count: 7 },
+    { name: 'Fragmento da Perdição (Verde)', count: 7 },
+    { name: 'Fragmento de Calor (Verde)', count: 7 },
+    { name: 'Fragmento do Ceifador (Verde)', count: 7 },
+    { name: 'Fragmento Guardião (Amarelo)', count: 7 },
+    { name: 'Fragmento de Paixão (Amarelo)', count: 7 },
+    { name: 'Fragmento de Transcendência (Amarelo)', count: 7 },
+    { name: 'Fragmento de Golpe Crucial (Amarelo)', count: 7 },
+    { name: 'Fragmento de Justiça (Amarelo)', count: 7 },
+  ],
   4: [],
   5: [],
   6: [],
@@ -37,4 +61,7 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
 };
 
 // Lista de todas as runas para usar nos seletores
-export const ALL_RUNE_FRAGMENTS = IDEAL_RUNES_BY_TIER[2].map(rune => rune.name);
+export const ALL_RUNE_FRAGMENTS = [
+    ...IDEAL_RUNES_BY_TIER[2].map(rune => rune.name),
+    ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name)
+];
