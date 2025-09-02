@@ -23,13 +23,16 @@ const auth = getAuth(app);
 
 // Connect to emulators in development
 if (process.env.NODE_ENV === 'development') {
-    // Check if running in the browser and emulators are not already connected
-    if (typeof window !== 'undefined' && !auth.emulatorConfig) {
-        try {
-            connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
-            console.log("Conectado ao Emulador de Autenticação.");
-        } catch (e) {
-            console.error("Erro ao conectar ao emulador de autenticação:", e);
+    // This check ensures we're in a browser environment before connecting to the emulator.
+    if (typeof window !== 'undefined') {
+        // We check if the emulator is already connected to prevent errors from reconnecting.
+        if (!auth.emulatorConfig) {
+            try {
+                connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
+                console.log("Firebase Auth Emulator connected.");
+            } catch (error) {
+                console.error("Error connecting to Firebase Auth Emulator:", error);
+            }
         }
     }
 }
