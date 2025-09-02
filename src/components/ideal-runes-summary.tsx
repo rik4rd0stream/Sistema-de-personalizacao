@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
 import { Gem, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from './ui/button';
 
 export interface IdealRune {
   name: string;
@@ -53,8 +55,13 @@ export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier, is
       return (
         <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 h-[calc(100vh-220px)]">
             <Gem className="h-12 w-12 mb-4" />
-            <p>Nenhuma runa ideal cadastrada para o Tier {tier}.</p>
-            <p className="text-xs mt-2">Um administrador pode adicioná-las no painel de admin.</p>
+            <p className="font-semibold">Nenhuma runa ideal cadastrada para o Tier {tier}.</p>
+            <p className="text-xs mt-2 max-w-xs">
+                Vá para a tela de gerenciamento para adicionar os fragmentos que você considera ideais para este tier.
+            </p>
+            <Button asChild size="sm" className="mt-4">
+                <Link href="/runas-ideais">Gerenciar Minhas Runas</Link>
+            </Button>
         </div>
       );
     }
