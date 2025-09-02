@@ -9,7 +9,7 @@ import {
   signOut,
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +19,7 @@ export interface UserProfile {
   email: string;
   role: 'admin' | 'user';
   status: 'approved' | 'pending' | 'rejected';
-  createdAt: any;
+  createdAt: Timestamp;
 }
 
 interface AuthContextType {
@@ -45,41 +45,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setLoading(true);
-      setUser(currentUser);
       if (currentUser) {
+        setUser(currentUser);
+        // Fetch user profile from Firestore
         const userDocRef = doc(db, 'users', currentUser.uid);
         const userDoc = await getDoc(userDocRef);
+
         if (userDoc.exists()) {
           const profile = userDoc.data() as UserProfile;
           setUserProfile(profile);
-
-          const isLoginPage = pathname === '/login';
-
+          
+          // --- Redirection Logic ---
           if (profile.status === 'pending') {
             if (pathname !== '/aguardando-aprovacao') {
-               router.push('/aguardando-aprovacao');
+              router.push('/aguardando-aprovacao');
             }
           } else if (profile.status === 'rejected') {
-            await signOut(auth);
             toast({ variant: "destructive", title: "Acesso Negado", description: "Sua conta foi rejeitada." });
+            await signOut(auth); // This will trigger onAuthStateChanged again
           } else if (profile.status === 'approved') {
-             // Se o usuário aprovado estiver na tela de login ou aguardando aprovação, redirecione.
-             const publicRoutes = ['/aguardando-aprovacao', '/login'];
-             if (publicRoutes.includes(pathname)) {
+            const isRestrictedPage = ['/login', '/aguardando-aprovacao'].includes(pathname);
+            if (isRestrictedPage) {
                router.push('/personagens');
             }
           }
         } else {
-            // Este caso acontece se o usuário existe na Auth mas não no Firestore (ex: exclusão manual do DB)
+            // User exists in Auth but not in Firestore DB. This is an inconsistent state.
+            toast({ variant: "destructive", title: "Erro de Conta", description: "Seu perfil não foi encontrado. Contate o suporte." });
             await signOut(auth);
-            setUserProfile(null);
         }
+
       } else {
+        // User is not logged in
+        setUser(null);
         setUserProfile(null);
         const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao'];
-        // Se o usuário não está logado e tenta acessar uma rota protegida, redireciona para o login.
-        if (protectedRoutes.some(route => pathname.startsWith(route))) {
+        const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
+        if (isProtected) {
           router.push('/login');
         }
       }
@@ -87,12 +89,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [router, pathname, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   const logIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // O listener onAuthStateChanged cuidará do redirecionamento.
+      // The onAuthStateChanged listener will handle redirection.
     } catch (error: any) {
        toast({
           variant: "destructive",
@@ -110,25 +113,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const isMasterAdmin = newUser.email === MASTER_ADMIN_EMAIL;
 
-      const newUserProfile: Omit<UserProfile, 'createdAt'> = {
+      const newUserProfile = {
           uid: newUser.uid,
           email: newUser.email!,
-          role: isMasterAdmin ? 'admin' : 'user',
-          status: isMasterAdmin ? 'approved' : 'pending',
+          role: isMasterAdmin ? 'admin' : ('user' as const),
+          status: isMasterAdmin ? ('approved' as const) : ('pending' as const),
+          createdAt: serverTimestamp(),
       };
 
-      await setDoc(doc(db, "users", newUser.uid), {
-          ...newUserProfile,
-          createdAt: serverTimestamp(),
-      });
+      await setDoc(doc(db, "users", newUser.uid), newUserProfile);
       
+      // onAuthStateChanged will now handle the user and redirect appropriately
       if (isMasterAdmin) {
         toast({
             title: 'Conta de Administrador criada!',
             description: 'Login realizado com sucesso.',
         });
       }
-      // O listener onAuthStateChanged cuidará do redirecionamento para a tela de aprovação ou para a home.
       
     } catch (error: any) {
         let description = "Ocorreu um erro ao criar a conta.";
@@ -149,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logOut = async () => {
     try {
       await signOut(auth);
-      router.push('/login');
+      router.push('/login'); // Redirect to login after sign out
     } catch (error) {
       console.error("Erro ao fazer logout", error);
        toast({

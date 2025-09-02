@@ -19,7 +19,8 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
-  // O useEffect que estava aqui foi removido para centralizar a lógica no AuthContext.
+  // The redirection logic is now fully handled by the AuthProvider.
+  // This component's responsibility is to render the form or a loading state.
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,19 +36,20 @@ export default function LoginPage() {
     try {
       if (isSignUp) {
         await signUp(email, password);
-        // Não é mais necessário setar `isSignUp` para false, o contexto irá redirecionar ou exibir a tela de aprovação.
+        // Redirection or showing pending approval page is handled by AuthContext
       } else {
         await logIn(email, password);
+        // Redirection is handled by AuthContext
       }
     } catch (error: any) {
-      // As mensagens de erro já são tratadas no auth-context
+      // Error toasts are handled within the auth context's logIn/signUp functions
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Se o contexto ainda está carregando ou se o usuário já está logado, mostramos um loader.
-  // O AuthContext será responsável por redirecionar para a página correta.
+  // While the auth state is being determined, or if the user is already logged in,
+  // show a loading spinner. The AuthProvider will redirect away from this page if necessary.
   if (loading || (user && userProfile)) {
      return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
@@ -57,6 +59,7 @@ export default function LoginPage() {
     );
   }
 
+  // Render the login/signup form if the user is not logged in and auth state is determined.
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-secondary/30 p-4">
       <Card className="w-full max-w-sm">
