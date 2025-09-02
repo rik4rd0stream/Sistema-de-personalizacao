@@ -19,9 +19,6 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
-  // The redirection logic is now fully handled by the AuthProvider.
-  // This component's responsibility is to render the form or a loading state.
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -48,9 +45,7 @@ export default function LoginPage() {
     }
   };
 
-  // While the auth state is being determined, or if the user is already logged in,
-  // show a loading spinner. The AuthProvider will redirect away from this page if necessary.
-  if (loading || (user && userProfile)) {
+  if (loading || (user && !userProfile)) {
      return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

@@ -45,41 +45,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
       if (currentUser) {
         setUser(currentUser);
-        // Fetch user profile from Firestore
         const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
+        let userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists()) {
-          const profile = userDoc.data() as UserProfile;
-          setUserProfile(profile);
-          
-          // --- Redirection Logic ---
-          if (profile.status === 'pending') {
-            if (pathname !== '/aguardando-aprovacao') {
-              router.push('/aguardando-aprovacao');
-            }
-          } else if (profile.status === 'rejected') {
-            toast({ variant: "destructive", title: "Acesso Negado", description: "Sua conta foi rejeitada." });
-            await signOut(auth); // This will trigger onAuthStateChanged again
-          } else if (profile.status === 'approved') {
-            const isRestrictedPage = ['/login', '/aguardando-aprovacao'].includes(pathname);
-            if (isRestrictedPage) {
-               router.push('/personagens');
-            }
-          }
-        } else {
-            // User exists in Auth but not in Firestore DB. This is an inconsistent state.
-            toast({ variant: "destructive", title: "Erro de Conta", description: "Seu perfil não foi encontrado. Contate o suporte." });
-            await signOut(auth);
+        // If user exists in Auth but not in Firestore, create their profile.
+        if (!userDoc.exists()) {
+          const isMasterAdmin = currentUser.email === MASTER_ADMIN_EMAIL;
+          const newUserProfileData = {
+              uid: currentUser.uid,
+              email: currentUser.email!,
+              role: isMasterAdmin ? 'admin' : ('user' as const),
+              status: isMasterAdmin ? ('approved' as const) : ('pending' as const),
+              createdAt: serverTimestamp(),
+          };
+          await setDoc(userDocRef, newUserProfileData);
+          userDoc = await getDoc(userDocRef); // Re-fetch the document
+          console.log(`Profile created for ${currentUser.email}`);
         }
 
+        const profile = userDoc.data() as UserProfile;
+        setUserProfile(profile);
+        
+        // --- Redirection Logic ---
+        if (profile.status === 'pending') {
+          if (pathname !== '/aguardando-aprovacao') {
+            router.push('/aguardando-aprovacao');
+          }
+        } else if (profile.status === 'rejected') {
+          toast({ variant: "destructive", title: "Acesso Negado", description: "Sua conta foi rejeitada." });
+          await signOut(auth);
+        } else if (profile.status === 'approved') {
+          const isAuthPage = ['/login', '/aguardando-aprovacao'].includes(pathname);
+          if (isAuthPage) {
+             router.push('/personagens');
+          }
+        }
       } else {
         // User is not logged in
         setUser(null);
         setUserProfile(null);
-        const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao'];
+        const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao', '/personagem'];
         const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
         if (isProtected) {
           router.push('/login');
@@ -90,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
+  }, []); 
 
   const logIn = async (email: string, password: string) => {
     try {
@@ -111,25 +119,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
 
-      const isMasterAdmin = newUser.email === MASTER_ADMIN_EMAIL;
-
-      const newUserProfile = {
-          uid: newUser.uid,
-          email: newUser.email!,
-          role: isMasterAdmin ? 'admin' : ('user' as const),
-          status: isMasterAdmin ? ('approved' as const) : ('pending' as const),
-          createdAt: serverTimestamp(),
-      };
-
-      await setDoc(doc(db, "users", newUser.uid), newUserProfile);
+      // The onAuthStateChanged listener will now handle creating the profile document,
+      // so we don't need to duplicate the logic here. It simplifies the flow.
       
-      // onAuthStateChanged will now handle the user and redirect appropriately
-      if (isMasterAdmin) {
-        toast({
-            title: 'Conta de Administrador criada!',
-            description: 'Login realizado com sucesso.',
-        });
-      }
+      toast({
+          title: 'Conta criada com sucesso!',
+          description: 'Aguarde a aprovação de um administrador.',
+      });
       
     } catch (error: any) {
         let description = "Ocorreu um erro ao criar a conta.";
