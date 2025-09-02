@@ -12,6 +12,7 @@ import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export default function CharacterHubPage() {
   const { user, loading: authLoading } = useAuth();
@@ -21,6 +22,7 @@ export default function CharacterHubPage() {
   const { toast } = useToast();
 
   const [characterName, setCharacterName] = useState('');
+  const [characterClass, setCharacterClass] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export default function CharacterHubPage() {
           if (charDoc.exists()) {
             const data = charDoc.data();
             setCharacterName(data.name);
+            setCharacterClass(data.characterClass);
           } else {
             toast({
               variant: 'destructive',
@@ -94,7 +97,10 @@ export default function CharacterHubPage() {
                 </Button>
                 <div>
                     <h2 className="text-sm text-muted-foreground">Personagem</h2>
-                    <h1 className="text-3xl font-bold tracking-tight text-primary">{characterName}</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-bold tracking-tight text-primary">{characterName}</h1>
+                        {characterClass && <Badge variant="secondary" className="text-base">{characterClass}</Badge>}
+                    </div>
                 </div>
             </div>
             
