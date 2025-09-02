@@ -3,25 +3,30 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Regras para a coleção de usuários
+    // Regras para a coleção 'users'
     match /users/{userId} {
-      // Qualquer usuário autenticado pode ler seu próprio perfil
-      allow get: if request.auth != null && request.auth.uid == userId;
-
-      // Apenas o administrador pode ler a lista de todos os usuários
-      allow list: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Qualquer usuário autenticado pode criar seu próprio documento de perfil
+      allow create: if request.auth != null;
       
-      // Qualquer um pode criar seu próprio registro de usuário ao se cadastrar
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+      // O usuário só pode ler, atualizar ou deletar seu próprio documento
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
 
-      // Apenas o administrador pode atualizar o status/role de um usuário
-      allow update: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Regras para a coleção de personagens
-    match /users/{userId}/characters/{charId} {
-      // O usuário só pode criar, ler, atualizar e deletar seus próprios personagens
-      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      // Regras para a subcoleção 'characters'
+      match /characters/{characterId} {
+        // O usuário só pode gerenciar (ler, criar, atualizar, deletar) seus próprios personagens
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Regras para a sub-subcoleção 'runes' dentro de 'characters'
+        match /runes/{runeConfigId} {
+           allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+      }
+      
+      // Regras para a subcoleção 'idealRunes'
+      // O usuário pode ler e escrever nas suas próprias configurações de runas ideais
+      match /idealRunes/{classId}/{tierId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
   }
 }
