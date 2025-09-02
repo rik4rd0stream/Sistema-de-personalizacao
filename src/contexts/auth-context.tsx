@@ -9,10 +9,11 @@ import {
   signOut,
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { ALL_IDEAL_RUNES_DATA } from '@/lib/runes-seed';
 
 export interface UserProfile {
   uid: string;
@@ -43,6 +44,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const MASTER_ADMIN_EMAIL = "rik4rd0stream@gmail.com";
 
+  const seedAdminRunes = async (userId: string) => {
+    try {
+      // Check if data already exists to prevent overwriting
+      const firstRuneDoc = await getDoc(doc(db, 'users', userId, 'idealRunes', 'tier2'));
+      if (firstRuneDoc.exists()) {
+        console.log("Ideal runes data already seeded for admin.");
+        return;
+      }
+      
+      const batch = writeBatch(db);
+      
+      for (const tierData of ALL_IDEAL_RUNES_DATA) {
+        const docRef = doc(db, 'users', userId, 'idealRunes', `tier${tierData.tier}`);
+        batch.set(docRef, { runes: tierData.runes });
+      }
+
+      await batch.commit();
+      console.log("Successfully seeded ideal runes for admin user.");
+
+    } catch (error) {
+        console.error("Error seeding ideal runes for admin: ", error);
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
@@ -50,9 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentUser);
         const userDocRef = doc(db, 'users', currentUser.uid);
         let userDoc = await getDoc(userDocRef);
+        const isMasterAdmin = currentUser.email === MASTER_ADMIN_EMAIL;
 
         if (!userDoc.exists()) {
-          const isMasterAdmin = currentUser.email === MASTER_ADMIN_EMAIL;
           const newUserProfileData = {
               uid: currentUser.uid,
               email: currentUser.email!,
@@ -61,7 +86,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               createdAt: serverTimestamp(),
           };
           await setDoc(userDocRef, newUserProfileData);
+          if (isMasterAdmin) {
+            await seedAdminRunes(currentUser.uid);
+          }
           userDoc = await getDoc(userDocRef);
+        } else {
+            if(isMasterAdmin) {
+                await seedAdminRunes(currentUser.uid);
+            }
         }
 
         const profile = userDoc.data() as UserProfile;
@@ -83,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUser(null);
         setUserProfile(null);
-        const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao', '/personagem'];
+        const protectedRoutes = ['/personagens', '/admin', '/aguardando-aprovacao', '/personagem', '/runas-ideais'];
         const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
         if (isProtected) {
           router.push('/login');

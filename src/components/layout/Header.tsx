@@ -1,5 +1,5 @@
 'use client';
-import { Gem, LogOut, ShieldCheck } from 'lucide-react';
+import { Gem, LogOut, ShieldCheck, Cog } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -41,6 +41,12 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                 <Link href="/runas-ideais">
+                  <Cog className="mr-2 h-4 w-4" />
+                  <span>Runas Ideais</span>
+                </Link>
+              </DropdownMenuItem>
                {userProfile?.role === 'admin' && (
                 <DropdownMenuItem asChild>
                    <Link href="/admin">

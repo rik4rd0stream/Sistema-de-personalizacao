@@ -13,7 +13,7 @@ import { IdealRunesSummary, type IdealRune } from '@/components/ideal-runes-summ
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { doc, getDoc, setDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -81,9 +81,11 @@ export default function CharacterRunesPage() {
                 if (charDoc.exists()) {
                     const data = charDoc.data();
                     setCharacterName(data.name);
-                    if (data.runesTier) {
-                      setTier(data.runesTier);
-                      setEquipments(data.runesEquipments);
+                    const savedRunes = await getDoc(doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config'));
+                    if (savedRunes.exists()) {
+                      const runesData = savedRunes.data();
+                      setTier(runesData.tier);
+                      setEquipments(runesData.equipments);
                     }
                 } else {
                     toast({
@@ -106,15 +108,16 @@ export default function CharacterRunesPage() {
             }
         }
     };
-    if (!authLoading) {
+    if (!authLoading && !user) {
       fetchCharacterData();
     }
   }, [user, characterId, router, authLoading, toast]);
 
   const fetchIdealRunes = useCallback(async (selectedTier: number) => {
+      if (!user) return;
       setIsLoadingRunes(true);
       try {
-          const runesDocRef = doc(db, 'idealRunes', `tier${selectedTier}`);
+          const runesDocRef = doc(db, 'users', user.uid, 'idealRunes', `tier${selectedTier}`);
           const docSnap = await getDoc(runesDocRef);
           if (docSnap.exists()) {
               setIdealRunesForTier(docSnap.data().runes as IdealRune[]);
@@ -127,7 +130,7 @@ export default function CharacterRunesPage() {
       } finally {
           setIsLoadingRunes(false);
       }
-  }, [toast]);
+  }, [toast, user]);
 
   useEffect(() => {
     fetchIdealRunes(tier);
@@ -159,11 +162,11 @@ export default function CharacterRunesPage() {
     if (!user || !characterId) return;
 
     try {
-      const charDocRef = doc(db, 'users', user.uid, 'characters', characterId);
-      await updateDoc(charDocRef, {
-        runesTier: tier,
-        runesEquipments: equipments
-      });
+      const runesDocRef = doc(db, 'users', user.uid, 'characters', characterId, 'runes', 'config');
+      await setDoc(runesDocRef, {
+        tier,
+        equipments
+      }, { merge: true });
       toast({ title: 'Progresso Salvo!', description: 'Suas runas foram salvas com sucesso.' });
     } catch (error) {
       console.error("Error saving data: ", error);
