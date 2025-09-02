@@ -14,10 +14,11 @@ import { IdealRunesSummary } from '@/components/ideal-runes-summary';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Equipment {
   id: string;
@@ -39,6 +40,7 @@ export default function CharacterPage() {
   const router = useRouter();
   const params = useParams();
   const characterId = params.id as string;
+  const { toast } = useToast();
 
   const [characterName, setCharacterName] = useState('');
   const [tier, setTier] = useState<number>(9);
@@ -55,14 +57,14 @@ export default function CharacterPage() {
     const fetchCharacterData = async () => {
         if (user && characterId) {
             try {
-                const charDocRef = doc(db, 'characters', characterId);
+                const charDocRef = doc(db, 'users', user.uid, 'characters', characterId);
                 const charDoc = await getDoc(charDocRef);
 
-                if (charDoc.exists() && charDoc.data().userId === user.uid) {
-                    setCharacterName(charDoc.data().name);
+                if (charDoc.exists()) {
+                    const data = charDoc.data();
+                    setCharacterName(data.name);
                     // Aqui você pode carregar dados salvos do personagem no futuro
                 } else {
-                    // Personagem não existe ou não pertence ao usuário
                     toast({
                         variant: 'destructive',
                         title: 'Acesso Negado',
@@ -72,14 +74,21 @@ export default function CharacterPage() {
                 }
             } catch (error) {
                 console.error("Error fetching character data: ", error);
+                 toast({
+                    variant: 'destructive',
+                    title: 'Erro ao carregar',
+                    description: 'Não foi possível carregar os dados do personagem.',
+                });
                 router.push('/personagens');
             } finally {
                 setIsLoading(false);
             }
         }
     };
-    fetchCharacterData();
-  }, [user, characterId, router]);
+    if (!authLoading) {
+      fetchCharacterData();
+    }
+  }, [user, characterId, router, authLoading, toast]);
 
 
   const idealRunesForTier = useMemo(() => IDEAL_RUNES_BY_TIER[tier] || [], [tier]);

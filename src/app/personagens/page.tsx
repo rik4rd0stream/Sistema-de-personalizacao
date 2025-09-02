@@ -4,7 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, Timestamp, doc } from 'firebase/firestore';
 import { Header } from '@/components/layout/Header';
 import { Loader2, UserPlus, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -46,7 +46,8 @@ export default function CharactersPage() {
         if (user) {
             const fetchCharacters = async () => {
                 try {
-                    const q = query(collection(db, 'characters'), where('userId', '==', user.uid));
+                    const charactersCollectionRef = collection(db, 'users', user.uid, 'characters');
+                    const q = query(charactersCollectionRef);
                     const querySnapshot = await getDocs(q);
                     const chars = querySnapshot.docs.map(doc => ({
                         id: doc.id,
@@ -81,22 +82,27 @@ export default function CharactersPage() {
 
         setIsCreating(true);
         try {
-            const docRef = await addDoc(collection(db, 'characters'), {
-                userId: user.uid,
+            const charactersCollectionRef = collection(db, 'users', user.uid, 'characters');
+            const docRef = await addDoc(charactersCollectionRef, {
                 name: characterName.trim(),
                 characterClass: characterClass,
                 createdAt: Timestamp.now()
             });
+
             const newChar = { id: docRef.id, name: characterName.trim(), characterClass, createdAt: Timestamp.now() };
             setCharacters(prev => [newChar, ...prev]);
             setCharacterName('');
             setCharacterClass('');
+             toast({
+                title: 'Personagem criado com sucesso!',
+             });
+
         } catch (error) {
             console.error("Error creating character:", error);
             toast({
                 variant: 'destructive',
                 title: 'Erro ao criar personagem',
-                description: 'Não foi possível criar o personagem. Tente novamente.',
+                description: 'Não foi possível criar o personagem. Verifique as regras do Firestore.',
             });
         } finally {
             setIsCreating(false);

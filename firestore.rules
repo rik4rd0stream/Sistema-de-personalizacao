@@ -2,18 +2,15 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Regra para a coleção 'characters'
-    match /characters/{characterId} {
-      // Permite a leitura de um personagem se o 'userId' do documento
-      // for igual ao 'uid' do usuário autenticado.
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      
-      // Permite a criação de um personagem se o usuário estiver autenticado
-      // e o 'userId' do novo documento for igual ao 'uid' do usuário.
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      
-      // Bloqueia atualizações e exclusões por enquanto, para segurança.
-      allow update, delete: if false;
+    // Users can only read and write to their own user document
+    match /users/{userId} {
+      allow read, update: if request.auth.uid == userId;
+
+      // Characters are stored as a subcollection of a user document
+      match /characters/{characterId} {
+        allow read, update, delete: if request.auth.uid == userId;
+        allow create: if request.auth.uid == userId;
+      }
     }
   }
 }
