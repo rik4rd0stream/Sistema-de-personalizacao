@@ -19,19 +19,26 @@ import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { RuneSlotDialog } from '@/components/rune-slot-dialog';
 
 export interface Equipment {
   id: string;
   name: string;
   icon: EquipmentType['icon'];
-  currentRunes: string[];
+  fragments: string[];
 }
 
+export interface RuneSlotIdentifier {
+  equipmentId: string;
+  runeIndex: number;
+}
+
+
 function getInitialEquipmentState(tier: number): Equipment[] {
-  const runeSlots = (tier === 2 ? 2 : 3) * 2; // Dobrado para 2 fragmentos por runa
+  const fragmentSlots = (tier === 2 ? 2 : 3) * 2;
   return EQUIPMENT_TYPES.map(eq => ({
     ...eq,
-    currentRunes: Array(runeSlots).fill(''),
+    fragments: Array(fragmentSlots).fill(''),
   }));
 }
 
@@ -46,6 +53,16 @@ export default function CharacterRunesPage() {
   const [tier, setTier] = useState<number>(2);
   const [equipments, setEquipments] = useState<Equipment[]>(() => getInitialEquipmentState(tier));
   const [isLoading, setIsLoading] = useState(true);
+  const [editingRuneSlot, setEditingRuneSlot] = useState<RuneSlotIdentifier | null>(null);
+
+  const openRuneSlotDialog = (identifier: RuneSlotIdentifier) => {
+    setEditingRuneSlot(identifier);
+  };
+  
+  const closeRuneSlotDialog = () => {
+    setEditingRuneSlot(null);
+  };
+
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -93,8 +110,8 @@ export default function CharacterRunesPage() {
 
   const idealRunesForTier = useMemo(() => IDEAL_RUNES_BY_TIER[tier] || [], [tier]);
   
-  const allCurrentRunes = useMemo(() => {
-    return equipments.flatMap(eq => eq.currentRunes.map(r => r.trim().toLowerCase()).filter(r => r));
+  const allCurrentFragments = useMemo(() => {
+    return equipments.flatMap(eq => eq.fragments.map(r => r.trim().toLowerCase()).filter(r => r));
   }, [equipments]);
   
   const handleTierChange = (newTierValue: string) => {
@@ -103,21 +120,27 @@ export default function CharacterRunesPage() {
     setEquipments(getInitialEquipmentState(newTier));
   };
   
-  const handleRuneChange = useCallback((equipmentId: string, runeIndex: number, value: string) => {
+  const handleRuneChange = useCallback((equipmentId: string, runeIndex: number, fragmentIndex: number, value: string) => {
     const finalValue = value === 'EMPTY_SLOT' ? '' : value;
+    const fullFragmentIndex = runeIndex * 2 + fragmentIndex;
+
     setEquipments(prev => prev.map(eq => 
       eq.id === equipmentId 
-        ? { ...eq, currentRunes: eq.currentRunes.map((rune, index) => index === runeIndex ? finalValue : rune) }
+        ? { ...eq, fragments: eq.fragments.map((fragment, index) => index === fullFragmentIndex ? finalValue : fragment) }
         : eq
     ));
   }, []);
   
-  const runeSlots = useMemo(() => (tier === 2 ? 2 : 3) * 2, [tier]); // Dobrado
   const availableRunesForTier = useMemo(() => {
     const idealRuneNames = idealRunesForTier.map(r => r.name);
     // Ensure 'EMPTY_SLOT' is always first and available.
     return ['EMPTY_SLOT', ...Array.from(new Set(idealRuneNames)).sort()];
   }, [idealRunesForTier]);
+
+  const currentlyEditingEquipment = useMemo(() => {
+    if (!editingRuneSlot) return null;
+    return equipments.find(e => e.id === editingRuneSlot.equipmentId) ?? null;
+  }, [editingRuneSlot, equipments]);
 
   if (authLoading || isLoading) {
     return (
@@ -164,10 +187,10 @@ export default function CharacterRunesPage() {
                   equipment={equipment}
                   tier={tier}
                   onRuneChange={handleRuneChange}
-                  runeSlots={runeSlots}
                   idealRunesForTier={idealRunesForTier}
-                  allCurrentRunes={allCurrentRunes}
+                  allCurrentRunes={allCurrentFragments}
                   availableRunes={availableRunesForTier}
+                  openRuneSlotDialog={openRuneSlotDialog}
                 />
               ))}
           </Card>
@@ -175,11 +198,22 @@ export default function CharacterRunesPage() {
           <div className="col-span-1">
             <IdealRunesSummary
               idealRunesForTier={idealRunesForTier}
-              allCurrentRunes={allCurrentRunes}
+              allCurrentRunes={allCurrentFragments}
               tier={tier}
             />
           </div>
         </div>
+
+         {editingRuneSlot && currentlyEditingEquipment && (
+            <RuneSlotDialog
+                isOpen={!!editingRuneSlot}
+                onClose={closeRuneSlotDialog}
+                equipment={currentlyEditingEquipment}
+                runeIndex={editingRuneSlot.runeIndex}
+                availableFragments={availableRunesForTier}
+                onFragmentChange={handleRuneChange}
+            />
+        )}
       </main>
     </div>
   );

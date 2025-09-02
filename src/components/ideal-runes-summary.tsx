@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo } from 'react';
 import type { IdealRune } from '@/lib/runes';
@@ -64,8 +65,8 @@ export function IdealRunesSummary({ idealRunesForTier, allCurrentRunes, tier }: 
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Runas Ideais</CardTitle>
-            <CardDescription>Faltam {totalRunesCount - currentRunesCount} de {totalRunesCount} runas</CardDescription>
+            <CardTitle>Fragmentos Ideais</CardTitle>
+            <CardDescription>Faltam {totalRunesCount - currentRunesCount} de {totalRunesCount} fragmentos</CardDescription>
           </div>
           <Badge variant="secondary" className="text-base">Tier {tier}</Badge>
         </div>
