@@ -107,23 +107,21 @@ export default function CharacterHubPage() {
             <div className="space-y-4">
                 <h2 className="text-2xl font-bold tracking-tight">Selecione uma opção</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <Link href={`/personagem/${characterId}/runas`} legacyBehavior>
-                        <a className="block">
-                            <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
-                                <CardHeader className="flex flex-row items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <Gem className="h-8 w-8 text-accent"/>
-                                        <div>
-                                            <CardTitle>Otimizador de Runas</CardTitle>
-                                            <CardDescription>
-                                                Gerencie as runas do seu equipamento.
-                                            </CardDescription>
-                                        </div>
+                    <Link href={`/personagem/${characterId}/runas`} className="block">
+                        <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <Gem className="h-8 w-8 text-accent"/>
+                                    <div>
+                                        <CardTitle>Otimizador de Runas</CardTitle>
+                                        <CardDescription>
+                                            Gerencie as runas do seu equipamento.
+                                        </CardDescription>
                                     </div>
-                                    <ChevronRight className="h-6 w-6 text-muted-foreground"/>
-                                </CardHeader>
-                            </Card>
-                        </a>
+                                </div>
+                                <ChevronRight className="h-6 w-6 text-muted-foreground"/>
+                            </CardHeader>
+                        </Card>
                     </Link>
                     <Card onClick={handleComingSoon} className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
                         <CardHeader className="flex flex-row items-center justify-between">

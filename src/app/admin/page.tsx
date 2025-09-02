@@ -95,23 +95,21 @@ export default function AdminPage() {
                     </div>
 
                     <div className="mb-8 grid gap-4 md:grid-cols-2">
-                        <Link href={`/admin/runas`} legacyBehavior>
-                            <a className="block">
-                                <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
-                                    <CardHeader className="flex flex-row items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <Gem className="h-8 w-8 text-accent"/>
-                                            <div>
-                                                <CardTitle>Gerenciar Runas Ideais</CardTitle>
-                                                <CardDescription>
-                                                    Edite a lista de runas para cada tier.
-                                                </CardDescription>
-                                            </div>
+                        <Link href={`/admin/runas`} className="block">
+                            <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer h-full">
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <Gem className="h-8 w-8 text-accent"/>
+                                        <div>
+                                            <CardTitle>Gerenciar Runas Ideais</CardTitle>
+                                            <CardDescription>
+                                                Edite a lista de runas para cada tier.
+                                            </CardDescription>
                                         </div>
-                                        <ChevronRight className="h-6 w-6 text-muted-foreground"/>
-                                    </CardHeader>
-                                </Card>
-                            </a>
+                                    </div>
+                                    <ChevronRight className="h-6 w-6 text-muted-foreground"/>
+                                </CardHeader>
+                            </Card>
                         </Link>
                     </div>
 

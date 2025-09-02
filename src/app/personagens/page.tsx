@@ -163,20 +163,18 @@ export default function CharactersPage() {
                        {characters.length > 0 ? (
                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                {characters.map(char => (
-                                   <Link href={`/personagem/${char.id}`} key={char.id} legacyBehavior>
-                                        <a className="block">
-                                            <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer">
-                                                <CardHeader className="flex flex-row items-center justify-between">
-                                                    <div>
-                                                        <CardTitle>{char.name}</CardTitle>
-                                                        <CardDescription>
-                                                           <Badge variant="secondary" className="mt-2">{char.characterClass}</Badge>
-                                                        </CardDescription>
-                                                    </div>
-                                                    <ChevronRight className="h-6 w-6 text-muted-foreground"/>
-                                                </CardHeader>
-                                            </Card>
-                                        </a>
+                                   <Link href={`/personagem/${char.id}`} key={char.id} className="block">
+                                        <Card className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer">
+                                            <CardHeader className="flex flex-row items-center justify-between">
+                                                <div>
+                                                    <CardTitle>{char.name}</CardTitle>
+                                                    <CardDescription>
+                                                       <Badge variant="secondary" className="mt-2">{char.characterClass}</Badge>
+                                                    </CardDescription>
+                                                </div>
+                                                <ChevronRight className="h-6 w-6 text-muted-foreground"/>
+                                            </CardHeader>
+                                        </Card>
                                    </Link>
                                ))}
                            </div>
