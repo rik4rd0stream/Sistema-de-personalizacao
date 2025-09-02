@@ -1,4 +1,3 @@
-
 import type { LucideIcon } from 'lucide-react';
 import { Sword, Shield, Shirt, HardHat, Hand, Bot, CircleDot, Gem, RectangleHorizontal } from 'lucide-react';
 
@@ -22,26 +21,26 @@ export const EQUIPMENT_TYPES: EquipmentType[] = [
 ];
 
 export const ALL_RUNE_FRAGMENTS = [
-    "Fragmento de Fogo (Vermelho)",
-    "Fragmento de Gelo (Verde)",
-    "Fragmento de Relâmpago (Amarelo)",
-    "Fragmento de Maldição (Roxo)",
-    "Fragmento de Vento (Verde)",
-    "Fragmento de Água (Verde)",
-    "Fragmento de Terra (Amarelo)",
-    "Fragmento de Escuridão (Roxo)",
-    "Fragmento de Luz (Amarelo)",
-    "Fragmento de Veneno (Verde)",
-    "Fragmento de Sangue (Vermelho)",
-    "Fragmento de Magia (Roxo)",
-    "Fragmento de Proteção (Amarelo)",
-    "Fragmento de Ataque (Vermelho)",
-    "Fragmento de Defesa (Amarelo)",
-    "Fragmento de Vida (Verde)",
-    "Fragmento de Mana (Roxo)",
-    "Fragmento de Velocidade (Verde)",
-    "Fragmento de Crítico (Vermelho)",
-    "Fragmento de Dano Crítico (Vermelho)",
-    "Fragmento de Resistência (Amarelo)",
-    "Fragmento de Penetração (Roxo)"
-].sort();
+  "Fragmento da Ira Celestial (Verde)",
+  "Fragmento da Ira Celestial (Roxo)",
+  "Fragmento de Artesão (Amarelo)",
+  "Fragmento de Ataque Poderoso (Amarelo)",
+  "Fragmento de Congelar (Verde)",
+  "Fragmento de Congelar (Roxo)",
+  "Fragmento de Maldição (Verde)",
+  "Fragmento de Maldição (Roxo)",
+  "Fragmento de Meteorito (Verde)",
+  "Fragmento de Meteorito (Roxo)",
+  "Fragmento de Proteção (Amarelo)",
+  "Fragmento de Sombra (Amarelo)",
+  "Fragmento de Transição (Verde)",
+  "Fragmento de Transição (Roxo)",
+  "Fragmento do Pântano Venenoso (Verde)",
+  "Fragmento do Pântano Venenoso (Roxo)",
+  "Fragmento Inabalável (Amarelo)",
+  "Fragmento Inócuo (Verde)",
+  "Fragmento Inócuo (Roxo)",
+  "Fragmento Venenoso (Verde)",
+  "Fragmento Venenoso (Roxo)",
+  "Nenhum Fragmento (Vermelho)"
+].sort((a, b) => a.localeCompare(b));
