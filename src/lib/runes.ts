@@ -122,7 +122,29 @@ export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
     { name: 'Fragmento da Morte (Amarelo)', count: 7 },
     { name: 'Fragmento de Desaparecimento (Amarelo)', count: 7 },
   ],
-  7: [],
+  7: [
+    { name: 'Fragmento de Melodia Venenosa (Vermelho)', count: 7 },
+    { name: 'Fragmento de Gelo Estilhaçado (Vermelho)', count: 7 },
+    { name: 'Fragmento de Espinho Venenoso (Roxo)', count: 7 },
+    { name: 'Fragmento de Estudo de Veneno (Roxo)', count: 7 },
+    { name: 'Fragmento de Ataque Venenoso (Roxo)', count: 7 },
+    { name: 'Fragmento de Elemento IV (Roxo)', count: 7 },
+    { name: 'Fragmento de Proteção de Gelo (Roxo)', count: 7 },
+    { name: 'Fragmento de Armadura Gélida (Roxo)', count: 7 },
+    { name: 'Fragmento Gelado (Roxo)', count: 7 },
+    { name: 'Fragmento de Espinho Venenoso (Verde)', count: 7 },
+    { name: 'Fragmento de Estudo de Veneno (Verde)', count: 7 },
+    { name: 'Fragmento de Ataque Venenoso (Verde)', count: 7 },
+    { name: 'Fragmento de Elemento IV (Verde)', count: 7 },
+    { name: 'Fragmento de Proteção de Gelo (Verde)', count: 7 },
+    { name: 'Fragmento de Armadura Gélida (Verde)', count: 7 },
+    { name: 'Fragmento Gelado (Verde)', count: 7 },
+    { name: 'Fragmento de Armadura Sagrada (Amarelo)', count: 7 },
+    { name: 'Fragmento de Armadura da Alma (Amarelo)', count: 7 },
+    { name: 'Fragmento de Soldado da Alma (Amarelo)', count: 7 },
+    { name: 'Fragmento de Destruição (Amarelo)', count: 7 },
+    { name: 'Fragmento de Batalha Feroz (Amarelo)', count: 7 },
+  ],
   8: [],
   9: [],
 };
@@ -133,7 +155,8 @@ export const ALL_RUNE_FRAGMENTS = [
     ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name),
     ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name),
     ...IDEAL_RUNES_BY_TIER[5].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[6].map(rune => rune.name)
+    ...IDEAL_RUNES_BY_TIER[6].map(rune => rune.name),
+    ...IDEAL_RUNES_BY_TIER[7].map(rune => rune.name)
 ];
 
     
