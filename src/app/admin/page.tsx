@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, updateDoc, Timestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { Header } from '@/components/layout/Header';
 import { Loader2, ShieldCheck, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -37,21 +37,26 @@ export default function AdminPage() {
                 setIsLoading(true);
                 try {
                     const usersCollectionRef = collection(db, 'users');
-                    const q = query(
-                        usersCollectionRef, 
-                        where('status', '==', 'pending'),
-                        orderBy('createdAt', 'desc')
-                    );
+                    // 1. Query for pending users without server-side ordering
+                    const q = query(usersCollectionRef, where('status', '==', 'pending'));
                     const querySnapshot = await getDocs(q);
                     const users = querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id } as UserProfile));
+
+                    // 2. Sort the users on the client-side
+                    users.sort((a, b) => {
+                        const dateA = a.createdAt?.toDate() ?? new Date(0);
+                        const dateB = b.createdAt?.toDate() ?? new Date(0);
+                        return dateB.getTime() - dateA.getTime();
+                    });
+
                     setPendingUsers(users);
                 } catch (error) {
-                    console.error("Error fetching pending users. Firestore index might be missing.", error);
+                    console.error("Error fetching pending users:", error);
                      toast({
                         variant: 'destructive',
-                        title: 'Erro de Índice no Firestore',
-                        description: 'Um índice é necessário. Abra o console do navegador (F12), encontre o link de erro do Firestore e clique para criar o índice. Pode levar alguns minutos.',
-                        duration: 10000,
+                        title: 'Erro ao buscar usuários',
+                        description: 'Não foi possível carregar os usuários pendentes. Tente novamente mais tarde.',
+                        duration: 5000,
                     });
                 } finally {
                     setIsLoading(false);
