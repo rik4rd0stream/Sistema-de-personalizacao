@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { RuneSlotDialog } from '@/components/rune-slot-dialog';
-import { IDEAL_RUNES_BY_TIER } from '@/lib/runes';
+import { FRAGMENTS_BY_TIER } from '@/lib/fragments-by-tier';
 
 export interface Equipment {
   id: string;
@@ -195,7 +195,7 @@ export default function CharacterRunesPage() {
   }, [user, characterId, tier, equipments, toast]);
   
   const availableRunesForDialog = useMemo(() => {
-    const tierRunes = IDEAL_RUNES_BY_TIER[tier] || [];
+    const tierRunes = FRAGMENTS_BY_TIER[tier as keyof typeof FRAGMENTS_BY_TIER] || [];
     const fragmentNames = tierRunes.map(rune => rune.name);
     return ['EMPTY_SLOT', ...[...new Set(fragmentNames)].sort((a, b) => a.localeCompare(b))];
   }, [tier]);
