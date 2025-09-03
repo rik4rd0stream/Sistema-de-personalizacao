@@ -6,27 +6,28 @@ export interface IdealRune {
   
   export const IDEAL_RUNES_BY_TIER: Record<number, IdealRune[]> = {
     2: [
-      { name: 'Fragmento de Maldição (Roxo)', count: 14 },
-      { name: 'Fragmento do Pântano Venenoso (Roxo)', count: 14 },
-      { name: 'Fragmento Inócuo (Roxo)', count: 14 },
-      { name: 'Fragmento Venenoso (Roxo)', count: 14 },
-      { name: 'Fragmento da Ira Celestial (Roxo)', count: 14 },
-      { name: 'Fragmento de Congelar (Roxo)', count: 14 },
-      { name: 'Fragmento de Transição (Roxo)', count: 14 },
-      { name: 'Fragmento de Meteorito (Roxo)', count: 14 },
-      { name: 'Fragmento de Maldição (Verde)', count: 14 },
-      { name: 'Fragmento do Pântano Venenoso (Verde)', count: 14 },
-      { name: 'Fragmento Inócuo (Verde)', count: 14 },
-      { name: 'Fragmento Venenoso (Verde)', count: 14 },
       { name: 'Fragmento da Ira Celestial (Verde)', count: 14 },
-      { name: 'Fragmento de Congelar (Verde)', count: 14 },
-      { name: 'Fragmento de Transição (Verde)', count: 14 },
-      { name: 'Fragmento de Meteorito (Verde)', count: 14 },
-      { name: 'Fragmento de Sombra (Amarelo)', count: 14 },
-      { name: 'Fragmento de Proteção (Amarelo)', count: 14 },
+      { name: 'Fragmento da Ira Celestial (Roxo)', count: 14 },
       { name: 'Fragmento de Artesão (Amarelo)', count: 14 },
-      { name: 'Fragmento Inabalável (Amarelo)', count: 14 },
       { name: 'Fragmento de Ataque Poderoso (Amarelo)', count: 14 },
+      { name: 'Fragmento de Congelar (Verde)', count: 14 },
+      { name: 'Fragmento de Congelar (Roxo)', count: 14 },
+      { name: 'Fragmento de Maldição (Verde)', count: 14 },
+      { name: 'Fragmento de Maldição (Roxo)', count: 14 },
+      { name: 'Fragmento de Meteorito (Verde)', count: 14 },
+      { name: 'Fragmento de Meteorito (Roxo)', count: 14 },
+      { name: 'Fragmento de Proteção (Amarelo)', count: 14 },
+      { name: 'Fragmento de Sombra (Amarelo)', count: 14 },
+      { name: 'Fragmento de Transição (Verde)', count: 14 },
+      { name: 'Fragmento de Transição (Roxo)', count: 14 },
+      { name: 'Fragmento do Pântano Venenoso (Verde)', count: 14 },
+      { name: 'Fragmento do Pântano Venenoso (Roxo)', count: 14 },
+      { name: 'Fragmento Inabalável (Amarelo)', count: 14 },
+      { name: 'Fragmento Inócuo (Verde)', count: 14 },
+      { name: 'Fragmento Inócuo (Roxo)', count: 14 },
+      { name: 'Fragmento Venenoso (Verde)', count: 14 },
+      { name: 'Fragmento Venenoso (Roxo)', count: 14 },
+      { name: 'Nenhum Fragmento (Vermelho)', count: 14 }
     ],
     3: [
       { name: 'Fragmento do Escudo de Veneno (Vermelho)', count: 14 },
@@ -172,15 +173,3 @@ export interface IdealRune {
     ],
     9: [],
   };
-  
-  // Lista de todas as runas para usar nos seletores
-  export const ALL_RUNE_FRAGMENTS = [
-    ...IDEAL_RUNES_BY_TIER[2].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[3].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[4].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[5].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[6].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[7].map(rune => rune.name),
-    ...IDEAL_RUNES_BY_TIER[8].map(rune => rune.name)
-  ].filter((value, index, self) => self.indexOf(value) === index); // Remove duplicatas
-  
