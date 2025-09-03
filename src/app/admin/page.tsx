@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, Timestamp, orderBy } from 'firebase/firestore';
 import { Header } from '@/components/layout/Header';
 import { Loader2, ShieldCheck, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -37,7 +37,11 @@ export default function AdminPage() {
                 setIsLoading(true);
                 try {
                     const usersCollectionRef = collection(db, 'users');
-                    const q = query(usersCollectionRef, where('status', '==', 'pending'));
+                    const q = query(
+                        usersCollectionRef, 
+                        where('status', '==', 'pending'),
+                        orderBy('createdAt', 'desc')
+                    );
                     const querySnapshot = await getDocs(q);
                     const users = querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id } as UserProfile));
                     setPendingUsers(users);
@@ -45,8 +49,9 @@ export default function AdminPage() {
                     console.error("Error fetching pending users. Firestore index might be missing.", error);
                      toast({
                         variant: 'destructive',
-                        title: 'Erro de Índice',
-                        description: 'Verifique o console para o link de criação de índice do Firestore.',
+                        title: 'Erro de Índice no Firestore',
+                        description: 'Um índice é necessário. Abra o console do navegador (F12), encontre o link de erro do Firestore e clique para criar o índice. Pode levar alguns minutos.',
+                        duration: 10000,
                     });
                 } finally {
                     setIsLoading(false);
@@ -78,7 +83,7 @@ export default function AdminPage() {
         }
     };
 
-    if (authLoading || isLoading) {
+    if (authLoading || isLoading && pendingUsers.length === 0) {
         return (
             <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -103,7 +108,11 @@ export default function AdminPage() {
                             <CardDescription>Aprove ou rejeite os novos cadastros no sistema.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {pendingUsers.length > 0 ? (
+                            {isLoading && pendingUsers.length === 0 ? (
+                                <div className="flex items-center justify-center p-8">
+                                    <Loader2 className="animate-spin text-primary" />
+                                </div>
+                            ) : pendingUsers.length > 0 ? (
                                <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -116,7 +125,7 @@ export default function AdminPage() {
                                         {pendingUsers.map(pUser => (
                                             <TableRow key={pUser.uid}>
                                                 <TableCell className="font-medium">{pUser.email}</TableCell>
-                                                <TableCell>{pUser.createdAt?.toDate().toLocaleDateString()}</TableCell>
+                                                <TableCell>{pUser.createdAt?.toDate().toLocaleDateString('pt-BR')}</TableCell>
                                                 <TableCell className="text-right space-x-2">
                                                     <Button 
                                                         variant="ghost" 
