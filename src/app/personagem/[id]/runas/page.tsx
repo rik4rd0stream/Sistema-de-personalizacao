@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { EQUIPMENT_TYPES, ALL_RUNE_FRAGMENTS } from '@/lib/constants';
+import { EQUIPMENT_TYPES } from '@/lib/constants';
 import type { EquipmentType } from '@/lib/constants';
 import { EquipmentCard } from '@/components/equipment-card';
 import { CurrentRunesSummary } from '@/components/current-runes-summary';
@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { RuneSlotDialog } from '@/components/rune-slot-dialog';
+import { IDEAL_RUNES_BY_TIER } from '@/lib/runes';
 
 export interface Equipment {
   id: string;
@@ -194,8 +195,10 @@ export default function CharacterRunesPage() {
   }, [user, characterId, tier, equipments, toast]);
   
   const availableRunesForDialog = useMemo(() => {
-    return ['EMPTY_SLOT', ...ALL_RUNE_FRAGMENTS];
-  }, []);
+    const tierRunes = IDEAL_RUNES_BY_TIER[tier] || [];
+    const fragmentNames = tierRunes.map(rune => rune.name);
+    return ['EMPTY_SLOT', ...[...new Set(fragmentNames)].sort((a, b) => a.localeCompare(b))];
+  }, [tier]);
 
   const currentlyEditingEquipment = useMemo(() => {
     if (!editingRuneSlot) return null;
